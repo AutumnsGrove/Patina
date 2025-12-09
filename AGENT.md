@@ -5,17 +5,25 @@
 ---
 
 ## Project Purpose
-[Fill in: What this project does - 1-2 sentences]
+Automated weekly backup system for all 9 Grove D1 databases to R2 storage with SQL dump format, 12-week retention, manual trigger capability, and disaster recovery documentation.
 
 ## Tech Stack
-[Fill in: Technologies, frameworks, and languages used]
-- Language:
-- Framework:
-- Key Libraries:
-- Package Manager:
+- **Language**: TypeScript
+- **Framework**: Cloudflare Workers (Hono for routing)
+- **Storage**: Cloudflare R2 (backup storage), D1 (metadata tracking)
+- **Key Libraries**: hono, @cloudflare/workers-types
+- **Package Manager**: pnpm
+- **Deployment**: wrangler CLI
 
 ## Architecture Notes
-[Fill in: Key architectural decisions, patterns, or structure]
+- **Scheduled Worker**: Cron-triggered every Sunday at 3:00 AM UTC
+- **9 Source Databases**: All Grove D1 databases (groveauth, scout-db, grove-engine, etc.)
+- **Backup Storage**: R2 bucket with date-prefixed paths (YYYY-MM-DD/database-name.sql)
+- **Metadata DB**: grove-backups-db (D1) tracks job history, backup inventory, alerts
+- **Export Format**: SQL dumps with full schema + data, human-readable, portable
+- **Retention**: Automatic cleanup of backups older than 12 weeks
+- **API Endpoints**: Status dashboard, manual trigger, download, restore guides
+- **Alerting**: Discord webhook integration for failures (GroveMonitor integration planned)
 
 ---
 
