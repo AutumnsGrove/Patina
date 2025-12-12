@@ -4,6 +4,15 @@
 
 ---
 
+## Project Naming
+
+- **Public name:** Cache
+- **Internal codename:** GroveBackups
+
+*Part of the Grove ecosystem. "Squirrels cache acorns for winter."*
+
+---
+
 ## Project Purpose
 Automated weekly backup system for all 9 Grove D1 databases to R2 storage with SQL dump format, 12-week retention, manual trigger capability, and disaster recovery documentation.
 

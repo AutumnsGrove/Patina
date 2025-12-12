@@ -1,6 +1,10 @@
-# GroveBackups - Automated Database Backup System
+# Cache - Automated Database Backup System
+
+> **Internal codename:** GroveBackups
 
 **Automated weekly backups of all Grove D1 databases to R2 storage**
+
+*Squirrels cache acorns for winter — Cache runs weekly backups.*
 
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -10,7 +14,7 @@
 
 ## 🎯 Overview
 
-GroveBackups is a Cloudflare Worker that automatically backs up all 9 Grove D1 databases to R2 storage every week. It provides SQL dump exports, 12-week retention, manual backup triggers, and disaster recovery tools.
+Cache is a Cloudflare Worker that automatically backs up all 9 Grove D1 databases to R2 storage every week. It provides SQL dump exports, 12-week retention, manual backup triggers, and disaster recovery tools.
 
 **Key Features:**
 - ⏰ **Automated weekly backups** - Every Sunday at 3:00 AM UTC
@@ -28,7 +32,7 @@ GroveBackups is a Cloudflare Worker that automatically backs up all 9 Grove D1 d
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           GroveBackups System                               │
+│                              Cache System                                   │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────┐
@@ -94,9 +98,9 @@ Worker information and documentation.
 
 ```json
 {
-  "name": "GroveBackups",
+  "name": "Cache",
   "version": "1.0.0",
-  "description": "Automated D1 database backup system",
+  "description": "Automated D1 database backup system for Grove",
   "schedule": "Every Sunday at 3:00 AM UTC",
   "retention": "12 weeks",
   "databases": 9
@@ -355,11 +359,11 @@ packages/backups/
 
 ### Discord Notifications
 
-GroveBackups sends Discord webhook notifications for backup events:
+Cache sends Discord webhook notifications for backup events:
 
 **Success Notification** (if enabled):
 ```
-✅ Grove Backup Completed
+✅ Cache Backup Completed
 Databases: 9/9 successful
 Total Size: 2.1 MB
 Duration: 45s
@@ -367,7 +371,7 @@ Duration: 45s
 
 **Failure Notification:**
 ```
-⚠️ Grove Backup Partially Failed
+⚠️ Cache Backup Partially Failed
 Databases: 7/9 successful
 Total Size: 1.8 MB
 Duration: 52s

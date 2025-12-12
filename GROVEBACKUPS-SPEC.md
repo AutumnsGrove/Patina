@@ -1,12 +1,17 @@
-# GroveBackups - Automated Database Backup System
+# Cache - Automated Database Backup System
+
+> **Internal codename:** GroveBackups
 
 ## Project Overview
 
-**Name:** GroveBackups  
-**Location:** `packages/backups/` in GroveEngine monorepo  
-**URL:** `backups.grove.place` (optional dashboard)  
-**Purpose:** Automated weekly backups of all Grove D1 databases to R2  
+**Public Name:** Cache
+**Internal Codename:** GroveBackups
+**Location:** `packages/backups/` in GroveEngine monorepo
+**URL:** `backups.grove.place` (optional dashboard)
+**Purpose:** Automated weekly backups of all Grove D1 databases to R2
 **Stack:** Cloudflare Workers + D1 + R2
+
+*Part of the Grove ecosystem. "Squirrels cache acorns for winter."*
 
 ---
 
@@ -26,7 +31,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           GroveBackups System                               │
+│                              Cache System                                   │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────┐
@@ -464,9 +469,9 @@ Worker info and documentation.
 ```typescript
 // Response
 {
-  "name": "GroveBackups",
+  "name": "Cache",
   "version": "1.0.0",
-  "description": "Automated D1 database backup system",
+  "description": "Automated D1 database backup system for Grove",
   "schedule": "Every Sunday at 3:00 AM UTC",
   "retention": "12 weeks",
   "databases": 9,
@@ -675,9 +680,9 @@ export function formatDiscordMessage(result: BackupJobResult): object {
   
   return {
     embeds: [{
-      title: isSuccess 
-        ? '✅ Grove Backup Completed' 
-        : '⚠️ Grove Backup Partially Failed',
+      title: isSuccess
+        ? '✅ Cache Backup Completed'
+        : '⚠️ Cache Backup Partially Failed',
       color: isSuccess ? 0x22c55e : 0xef4444,
       fields: [
         { 

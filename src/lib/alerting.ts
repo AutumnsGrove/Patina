@@ -32,7 +32,7 @@ export function formatDiscordMessage(payload: AlertPayload): DiscordWebhookPaylo
   return {
     embeds: [
       {
-        title: isSuccess ? '✅ Grove Backup Completed' : '⚠️ Grove Backup Partially Failed',
+        title: isSuccess ? '✅ Cache Backup Completed' : '⚠️ Cache Backup Partially Failed',
         color: isSuccess ? 0x22c55e : 0xef4444,
         fields: [
           {
