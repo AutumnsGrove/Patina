@@ -28,9 +28,9 @@ const app = new Hono<{ Bindings: Env }>();
 // Root endpoint - documentation
 app.get('/', (c) => {
   return c.json({
-    name: 'GroveBackups',
+    name: 'Cache',
     version: '1.0.0',
-    description: 'Automated D1 database backup system',
+    description: 'Automated D1 database backup system for Grove',
     schedule: 'Every Sunday at 3:00 AM UTC',
     retention: '12 weeks',
     databases: 9,
