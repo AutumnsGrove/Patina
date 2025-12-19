@@ -56,22 +56,39 @@ pnpm lint         # Run ESLint (configured this session)
 
 ### Actionable Next Steps (Priority Order)
 
-**1. Create theme thumbnails**
-- Each theme needs a `/themes/{id}-thumb.png`
-- Could be generated programmatically or designed manually
+**1. Add R2 storage integration for FontUploader** (Recommended First)
+```bash
+# Read this first:
+cat AgentUsage/cloudflare_guide.md
+```
+- FontUploader component has full client-side validation ready
+- Need to create `src/lib/server/font-uploader.ts` with:
+  - `uploadFont(r2: R2Bucket, tenantId: string, file: ArrayBuffer, filename: string): Promise<string>`
+  - `deleteFont(r2: R2Bucket, path: string): Promise<void>`
+  - `listFonts(db: D1Database, tenantId: string): Promise<CustomFont[]>`
+- Add `custom_fonts` table migration (see `migrations/` for pattern)
+- Wire up FontUploader's `onUpload` callback to server function
+
+**2. Create theme thumbnails** (Design Task)
+- Each theme needs a thumbnail at `/static/themes/{id}-thumb.png`
+- Dimensions: 400x300px recommended
 - 10 themes need thumbnails: grove, minimal, night-garden, moodboard, solarpunk, ocean, wildflower, zine, typewriter, cozy-cabin
+- Can generate programmatically by rendering ThemePreview to canvas
 
-**2. Add R2 storage integration for FontUploader**
-- See `AgentUsage/cloudflare_guide.md` for R2 patterns
-- FontUploader has client-side validation ready
-- Need server-side upload handler with R2 storage
+**3. Community Themes (Phase 6)** (Large Feature)
+Start with:
+1. `src/lib/components/CommunityThemeBrowser.svelte` - Grid of community themes
+2. `src/lib/server/community-themes.ts` - CRUD for community_themes table
+3. Update `migrations/` with community_themes schema (already defined in types.ts)
 
-**3. Community Themes (Phase 6)**
-- Build theme sharing flow
-- Create community theme browser
-- Implement theme import
-- Build moderation queue
-- Add rating and download tracking
+### Important Gotchas for Next Agent
+
+1. **Svelte 5 Runes**: All components use `$props()`, `$state()`, `$derived()`, `$effect()` - NOT the old reactive syntax
+2. **Tier system**: `UserTier = 'free' | 'seedling' | 'sapling' | 'oak' | 'evergreen'` - check `tier-access.ts`
+3. **WCAG compliance**: All themes MUST pass `validateThemeContrast()` - 4.5:1 for body text
+4. **D1 types**: Global `D1Database` declared in `theme-loader.ts` - don't redeclare
+5. **Testing**: Run `pnpm test --run` before committing - all 186 tests must pass
+6. **Build**: Run `pnpm build` to ensure library compiles to `dist/`
 
 ### What's Fully Implemented
 
@@ -229,7 +246,7 @@ src/lib/
 | `LayoutPanel.svelte` | ✅ Fully implemented |
 | `CustomCSSEditor.svelte` | ✅ Fully implemented |
 | `ThemeCustomizer.svelte` | ✅ Fully implemented |
-| `FontUploader.svelte` | ⏳ Placeholder |
+| `FontUploader.svelte` | ✅ Fully implemented |
 | `theme-loader.ts` | ✅ Fully implemented |
 | `theme-saver.ts` | ✅ Fully implemented |
 | `contrast.ts` | ✅ Fully implemented (41 tests) |
@@ -285,8 +302,8 @@ src/lib/
 ### Core Setup
 - [x] Run `pnpm install` to install dependencies
 - [x] Verify TypeScript and Vitest configuration
-- [ ] Set up ESLint and Prettier
-- [ ] Configure svelte-check
+- [x] Set up ESLint and Prettier (Session 5: eslint.config.js with flat config)
+- [x] Configure svelte-check (already in package.json scripts)
 
 ### Groveengine Integration ✅
 - [x] Import color tokens from groveengine (grove, cream, bark scales)
