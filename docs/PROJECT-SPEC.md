@@ -99,7 +99,7 @@ Full control over appearance:
 
 ### 4. Custom Fonts (Evergreen Only)
 
-Upload up to 4 custom fonts:
+Upload up to 10 custom fonts:
 - **Formats:** WOFF2 (required), WOFF (optional fallback)
 - **Size limit:** 500KB per file
 - **Storage:** R2 under user's allocation
@@ -395,7 +395,7 @@ export const load = async ({ locals }) => {
 - [ ] Build FontUploader component
 - [ ] Implement WOFF2 validation (magic bytes, parsing)
 - [ ] Add R2 storage integration
-- [ ] Add font limit enforcement (4 per tenant)
+- [ ] Add font limit enforcement (10 per tenant)
 
 ### Phase 6: Community Themes (Week 11-13)
 - [ ] Build theme sharing flow

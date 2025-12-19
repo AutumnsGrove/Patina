@@ -5,17 +5,24 @@
 ---
 
 ## Project Purpose
-[Fill in: What this project does - 1-2 sentences]
+Patina is Grove's theme system — providing visual customization from simple accent colors to full theme customizers. It enables MySpace-level personalization with modern design sensibilities: make your blog feel like *yours*.
 
 ## Tech Stack
-[Fill in: Technologies, frameworks, and languages used]
-- Language:
-- Framework:
-- Key Libraries:
-- Package Manager:
+- **Language:** TypeScript
+- **Framework:** SvelteKit (library mode), Svelte 5
+- **Key Libraries:** Vitest (testing), svelte-check, ESLint
+- **Package Manager:** pnpm
+- **Database:** D1 (SQLite) via Cloudflare
+- **Storage:** R2 for custom fonts
 
 ## Architecture Notes
-[Fill in: Key architectural decisions, patterns, or structure]
+- **Package name:** `@autumnsgrove/patina`
+- **Tiered feature access:** Free → Seedling → Sapling → Oak → Evergreen
+- **10 curated themes** with tier-based unlocking
+- **Theme Customizer** (Oak+) for full color/typography/layout control
+- **Custom Fonts** (Evergreen) with WOFF2 validation
+- **Community Themes** (Oak+) for sharing and discovery
+- **Accessibility-first:** All themes must meet WCAG 2.1 AA contrast
 
 ---
 
