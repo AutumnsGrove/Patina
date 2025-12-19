@@ -3,6 +3,16 @@
 
 import type { Theme } from '../types.js';
 
+// Wildflower uses vibrant purples and pinks for a playful aesthetic
+const palette = {
+	background: '#fef7ff', // Very light purple tint
+	surface: '#ffffff', // White surface
+	foreground: '#581c87', // Deep purple text
+	foregroundMuted: '#6d28d9', // Medium purple for muted (meets 4.5:1 contrast)
+	accent: '#ec4899', // Pink accent
+	border: '#f5d0fe' // Light purple border
+} as const;
+
 export const wildflower: Theme = {
 	id: 'wildflower',
 	name: 'Wildflower',
@@ -11,12 +21,12 @@ export const wildflower: Theme = {
 	tier: 'sapling',
 
 	colors: {
-		background: '#fef7ff',
-		surface: '#ffffff',
-		foreground: '#581c87',
-		foregroundMuted: '#a855f7',
-		accent: '#ec4899',
-		border: '#f5d0fe'
+		background: palette.background,
+		surface: palette.surface,
+		foreground: palette.foreground,
+		foregroundMuted: palette.foregroundMuted,
+		accent: palette.accent,
+		border: palette.border
 	},
 
 	fonts: {

@@ -2,6 +2,18 @@
 // Solarpunk theme - Bright, optimistic
 
 import type { Theme } from '../types.js';
+import { grove } from '../tokens/colors.js';
+
+// Solarpunk builds on bright greens and sunny yellows
+// for a hopeful, future-focused aesthetic
+const palette = {
+	background: '#f0fdf4', // Very light green tint
+	surface: '#ffffff', // White surface
+	foreground: grove[800], // #166534 - Dark green text
+	foregroundMuted: grove[700], // #15803d - Darker green for muted (meets 4.5:1 contrast)
+	accent: '#fbbf24', // Sunny yellow accent
+	border: '#bbf7d0' // Light green border
+} as const;
 
 export const solarpunk: Theme = {
 	id: 'solarpunk',
@@ -11,12 +23,12 @@ export const solarpunk: Theme = {
 	tier: 'sapling',
 
 	colors: {
-		background: '#f0fdf4',
-		surface: '#ffffff',
-		foreground: '#166534',
-		foregroundMuted: '#4ade80',
-		accent: '#fbbf24',
-		border: '#bbf7d0'
+		background: palette.background,
+		surface: palette.surface,
+		foreground: palette.foreground,
+		foregroundMuted: palette.foregroundMuted,
+		accent: palette.accent,
+		border: palette.border
 	},
 
 	fonts: {
