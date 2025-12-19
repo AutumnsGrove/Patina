@@ -4,86 +4,112 @@
 
 ---
 
-## 🚀 Session Handoff Notes (2025-12-19 - Session 4)
+## 🚀 Session Handoff Notes (2025-12-19 - Session 5)
 
 ### Quick Start for Next Agent
 ```bash
 pnpm install      # Install deps (required first!)
 pnpm build        # Build library to dist/
-pnpm test --run   # Run tests (167 passing)
+pnpm test --run   # Run tests (186 passing)
+pnpm lint         # Run ESLint (configured this session)
 ```
 
 ### What Was Completed This Session
 
-**LayoutPanel Component** (`src/lib/components/LayoutPanel.svelte`):
-- Layout type selector with 6 options: sidebar, no-sidebar, centered, full-width, grid, masonry
-- Visual preview diagrams for each layout type
-- Max width input with presets (1000px, 1200px, 1400px, 1600px) + custom CSS validation
-- Spacing mode selection: compact, comfortable, spacious
-- Reset buttons for individual fields and "Reset All"
-- Full accessibility (ARIA labels, keyboard navigation, focus states)
+**FontUploader Component** (`src/lib/components/FontUploader.svelte`) - ✅ FULLY IMPLEMENTED:
+- Drag-and-drop upload zone with visual feedback
+- WOFF2 magic bytes validation (`0x774F4632`)
+- File size validation (500KB limit)
+- Font limit enforcement (10 per tenant, configurable)
+- Live font preview using dynamic `@font-face` injection
+- Existing fonts list with delete functionality
+- Progress indicator during validation
+- Error/success feedback with accessible alerts
+- Full accessibility (ARIA labels, keyboard navigation)
+- Responsive design with mobile support
 
-**ThemeCustomizer Component** (`src/lib/components/ThemeCustomizer.svelte`):
-- Tabbed UI with 4 sections: Colors, Typography, Layout, Custom CSS
-- Integrates ColorPanel, TypographyPanel, LayoutPanel, CustomCSSEditor
-- State management for all customizations with unsaved changes detection
-- Save button (calls onSave with updated ThemeSettings)
-- Reset to Default and Cancel buttons
-- Exports `effectiveTheme` for live preview integration
-- Keyboard navigation between tabs (arrow keys)
-- Full accessibility with ARIA roles and labels
+**Font Validator Tests** (`tests/font-validator.test.ts`) - ✅ 10 TESTS:
+- WOFF2 signature validation (accept valid, reject invalid)
+- WOFF signature validation (accept valid, reject invalid)
+- File size limit enforcement (500KB max)
+- Font name sanitization (preserve alphanumeric, remove special chars, trim whitespace)
 
-**CustomCSSEditor Component** (`src/lib/components/CustomCSSEditor.svelte`):
-- Large textarea with dark code editor aesthetic
-- 10KB size limit with visual progress bar
-- Security validation blocking dangerous patterns:
-  - `@import` statements
-  - `javascript:` URLs
-  - `expression()` (IE vulnerability)
-  - `behavior:` (IE vulnerability)
-  - `-moz-binding` (Firefox vulnerability)
-  - `<script>` tags
-  - External URLs in `url()`
-- Real-time validation feedback with error/warning display
-- CSS variable hints section
-- Character, line, and byte count display
-- Clear button
+**Customizer Integration Tests** (`tests/customizer.test.ts`) - ✅ 9 TESTS:
+- CSS variable generation from themes
+- Color, typography, and layout variables validation
+- Settings merge with custom overrides
+- Base value preservation when partially overridden
+- Accent color variations (light, dark, hover, muted)
+- Tier gating (blocks free/seedling/sapling, allows oak/evergreen)
 
-**CSS Validator Tests** (`tests/css-validator.test.ts`):
-- 19 tests for CSS validation logic
-- Size limit tests (under limit, over limit, warning threshold)
-- Blocked patterns tests (all 8 dangerous patterns)
-- URL validation tests (CSS variables, data URIs, relative URLs)
-- Valid CSS tests (custom properties, animations, gradients)
+**ESLint Configuration** (`eslint.config.js`) - ✅ CONFIGURED:
+- ESLint 9.x flat config format
+- TypeScript support with @typescript-eslint
+- Svelte support with eslint-plugin-svelte
+- Separate configs for server, client, and test files
+- Proper ignores for dist/, node_modules/, .svelte-kit/
 
 ### Test Summary
-- **167 tests passing** (up from 148)
-- 6 active test files, 2 skipped (future features: customizer integration, font validator)
+- **186 tests passing** (up from 167) - 19 new tests added
+- 8 active test files (all passing, none skipped)
+- All components fully implemented
 
 ### Actionable Next Steps (Priority Order)
 
-**1. Create theme thumbnails**
-- Each theme needs a `/themes/{id}-thumb.png`
-- Could be generated programmatically or designed manually
-- 10 themes need thumbnails: grove, minimal, night-garden, moodboard, solarpunk, ocean, wildflower, zine, typewriter, cozy-cabin
-
-**2. Build FontUploader component** (`src/lib/components/FontUploader.svelte`)
+**1. Add R2 storage integration for FontUploader** (Recommended First)
 ```bash
-# Currently a placeholder - Phase 5 (Evergreen tier)
-# Reference: CustomCSSEditor.svelte for validation patterns
+# Read this first:
+cat AgentUsage/cloudflare_guide.md
 ```
-Features needed:
-- WOFF2 file upload with drag-and-drop
-- File size validation (500KB limit)
-- Magic bytes validation for WOFF2 (`0x774F4632`)
-- R2 storage integration (see `AgentUsage/cloudflare_guide.md`)
-- Font limit enforcement (10 per tenant)
-- Progress indicator during upload
-- Preview of uploaded font
+- FontUploader component has full client-side validation ready
+- Need to create `src/lib/server/font-uploader.ts` with:
+  - `uploadFont(r2: R2Bucket, tenantId: string, file: ArrayBuffer, filename: string): Promise<string>`
+  - `deleteFont(r2: R2Bucket, path: string): Promise<void>`
+  - `listFonts(db: D1Database, tenantId: string): Promise<CustomFont[]>`
+- Add `custom_fonts` table migration (see `migrations/` for pattern)
+- Wire up FontUploader's `onUpload` callback to server function
 
-**3. Implement Customizer Integration Tests** (`tests/customizer.test.ts`)
-- Currently skipped - needs component testing setup
-- Test CSS variable generation, settings merge, tier gating
+**2. Create theme thumbnails** (Design Task)
+- Each theme needs a thumbnail at `/static/themes/{id}-thumb.png`
+- Dimensions: 400x300px recommended
+- 10 themes need thumbnails: grove, minimal, night-garden, moodboard, solarpunk, ocean, wildflower, zine, typewriter, cozy-cabin
+- Can generate programmatically by rendering ThemePreview to canvas
+
+**3. Community Themes (Phase 6)** (Large Feature)
+Start with:
+1. `src/lib/components/CommunityThemeBrowser.svelte` - Grid of community themes
+2. `src/lib/server/community-themes.ts` - CRUD for community_themes table
+3. Update `migrations/` with community_themes schema (already defined in types.ts)
+
+### Important Gotchas for Next Agent
+
+1. **Svelte 5 Runes**: All components use `$props()`, `$state()`, `$derived()`, `$effect()` - NOT the old reactive syntax
+2. **Tier system**: `UserTier = 'free' | 'seedling' | 'sapling' | 'oak' | 'evergreen'` - check `tier-access.ts`
+3. **WCAG compliance**: All themes MUST pass `validateThemeContrast()` - 4.5:1 for body text
+4. **D1 types**: Global `D1Database` declared in `theme-loader.ts` - don't redeclare
+5. **Testing**: Run `pnpm test --run` before committing - all 186 tests must pass
+6. **Build**: Run `pnpm build` to ensure library compiles to `dist/`
+
+### What's Fully Implemented
+
+| Component | Status |
+|-----------|--------|
+| `AccentColorPicker.svelte` | ✅ Complete |
+| `ThemeSelector.svelte` | ✅ Complete |
+| `ThemePreview.svelte` | ✅ Complete |
+| `ColorPanel.svelte` | ✅ Complete |
+| `TypographyPanel.svelte` | ✅ Complete |
+| `LayoutPanel.svelte` | ✅ Complete |
+| `CustomCSSEditor.svelte` | ✅ Complete |
+| `ThemeCustomizer.svelte` | ✅ Complete |
+| `FontUploader.svelte` | ✅ Complete |
+| `theme-loader.ts` | ✅ Complete |
+| `theme-saver.ts` | ✅ Complete |
+| `font-validator.ts` | ✅ Complete |
+| `css-validator.ts` | ✅ Complete |
+| `contrast.ts` | ✅ Complete |
+| `css-vars.ts` | ✅ Complete |
+| `registry.ts` | ✅ Complete |
 
 ### Reference Files
 
@@ -92,30 +118,7 @@ Features needed:
 - **Migrations**: `migrations/*.sql` - Database schema
 - **Token Colors**: `src/lib/tokens/colors.ts` - grove, bark, cream scales
 
-### Recommended Approach for FontUploader
-
-Follow the CustomCSSEditor pattern:
-```svelte
-<script lang="ts">
-  interface Props {
-    tenantId: string;
-    existingFonts?: CustomFont[];
-    maxFonts?: number;
-    maxSize?: number;
-    onUpload?: (font: CustomFont) => void;
-    onError?: (error: string) => void;
-  }
-  let { tenantId, existingFonts = [], maxFonts = 10, maxSize = 512000, onUpload, onError }: Props = $props();
-
-  // Validate WOFF2 magic bytes
-  function isValidWOFF2(buffer: ArrayBuffer): boolean {
-    const view = new DataView(buffer);
-    return view.getUint32(0) === 0x774F4632; // 'wOF2'
-  }
-</script>
-```
-
-### Component Patterns to Follow
+### Component Patterns (Svelte 5 Runes)
 
 All components use Svelte 5 runes:
 ```typescript
@@ -139,6 +142,12 @@ See `ThemeCustomizer.svelte` for a comprehensive example combining multiple pane
 - State management across multiple panels
 - Save/reset functionality
 - Unsaved changes detection
+
+---
+
+## Previous Session Work (Session 4)
+
+**LayoutPanel, ThemeCustomizer, CustomCSSEditor** - See git history for details.
 
 ---
 
@@ -237,7 +246,7 @@ src/lib/
 | `LayoutPanel.svelte` | ✅ Fully implemented |
 | `CustomCSSEditor.svelte` | ✅ Fully implemented |
 | `ThemeCustomizer.svelte` | ✅ Fully implemented |
-| `FontUploader.svelte` | ⏳ Placeholder |
+| `FontUploader.svelte` | ✅ Fully implemented |
 | `theme-loader.ts` | ✅ Fully implemented |
 | `theme-saver.ts` | ✅ Fully implemented |
 | `contrast.ts` | ✅ Fully implemented (41 tests) |
@@ -293,8 +302,8 @@ src/lib/
 ### Core Setup
 - [x] Run `pnpm install` to install dependencies
 - [x] Verify TypeScript and Vitest configuration
-- [ ] Set up ESLint and Prettier
-- [ ] Configure svelte-check
+- [x] Set up ESLint and Prettier (Session 5: eslint.config.js with flat config)
+- [x] Configure svelte-check (already in package.json scripts)
 
 ### Groveengine Integration ✅
 - [x] Import color tokens from groveengine (grove, cream, bark scales)
@@ -374,10 +383,10 @@ src/lib/
 ---
 
 ## Phase 5: Custom Fonts (Evergreen)
-- [ ] Build FontUploader component
-- [ ] Implement WOFF2 validation (magic bytes, parsing)
+- [x] Build FontUploader component
+- [x] Implement WOFF2 validation (magic bytes, parsing)
 - [ ] Add R2 storage integration
-- [ ] Add font limit enforcement (10 per tenant)
+- [x] Add font limit enforcement (10 per tenant)
 
 ---
 
@@ -398,4 +407,4 @@ src/lib/
 
 ---
 
-*Last updated: 2025-12-19 - Session 4: LayoutPanel, ThemeCustomizer, CustomCSSEditor, CSS validator tests. 167 tests passing.*
+*Last updated: 2025-12-19 - Session 5: FontUploader component, font-validator tests, customizer integration tests, ESLint config. 186 tests passing.*
