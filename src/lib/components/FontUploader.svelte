@@ -12,7 +12,7 @@
 		onDelete?: (fontId: string) => void;
 	}
 
-	let { existingFonts, maxFonts = 4, maxSize = 512000, onUpload, onDelete }: Props = $props();
+	let { existingFonts, maxFonts = 10, maxSize = 512000, onUpload, onDelete }: Props = $props();
 
 	// TODO: Implement font upload logic
 </script>

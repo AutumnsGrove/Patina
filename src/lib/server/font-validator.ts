@@ -15,7 +15,7 @@ export const MAX_FONT_SIZE = 500 * 1024;
 /**
  * Maximum number of custom fonts per tenant
  */
-export const MAX_FONTS_PER_TENANT = 4;
+export const MAX_FONTS_PER_TENANT = 10;
 
 /**
  * Validate a WOFF2 font file

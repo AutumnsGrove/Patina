@@ -96,7 +96,7 @@
 - [ ] Build FontUploader component
 - [ ] Implement WOFF2 validation (magic bytes, parsing)
 - [ ] Add R2 storage integration
-- [ ] Add font limit enforcement (4 per tenant)
+- [ ] Add font limit enforcement (10 per tenant)
 
 ---
 
@@ -113,7 +113,7 @@
 - All themes must meet WCAG 2.1 AA contrast (4.5:1 for body text)
 - Custom CSS max size: 10KB
 - Custom font max size: 500KB per file
-- Maximum 4 custom fonts per tenant
+- Maximum 10 custom fonts per tenant
 
 ---
 
