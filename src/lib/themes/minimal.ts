@@ -2,6 +2,17 @@
 // Minimal theme - Clean, typography-focused
 
 import type { Theme } from '../types.js';
+import { bark } from '../tokens/colors.js';
+
+// Minimal uses a monochromatic palette with warm bark undertones
+// for text to avoid the harshness of pure black on white
+const neutrals = {
+	white: '#ffffff',
+	offWhite: '#fafafa',
+	nearBlack: bark[950], // #2a1b0d - warmer than pure black
+	darkGray: bark[700], // #6f4d39 - muted text
+	lightGray: '#eeeeee'
+} as const;
 
 export const minimal: Theme = {
 	id: 'minimal',
@@ -11,12 +22,12 @@ export const minimal: Theme = {
 	tier: 'seedling',
 
 	colors: {
-		background: '#ffffff',
-		surface: '#fafafa',
-		foreground: '#111111',
-		foregroundMuted: '#666666',
-		accent: '#000000',
-		border: '#eeeeee'
+		background: neutrals.white,
+		surface: neutrals.offWhite,
+		foreground: neutrals.nearBlack,
+		foregroundMuted: neutrals.darkGray,
+		accent: neutrals.nearBlack, // Links and accents match text for minimal look
+		border: neutrals.lightGray
 	},
 
 	fonts: {
