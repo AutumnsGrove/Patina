@@ -4,70 +4,69 @@
 
 ---
 
-## 🚀 Session Handoff Notes (2025-12-19 - Session 5)
+## 🚀 Session Handoff Notes (2025-12-19 - Session 6)
 
 ### Quick Start for Next Agent
 ```bash
 pnpm install      # Install deps (required first!)
 pnpm build        # Build library to dist/
 pnpm test --run   # Run tests (186 passing)
-pnpm lint         # Run ESLint (configured this session)
+pnpm lint         # Run ESLint (0 errors, warnings only)
 ```
 
 ### What Was Completed This Session
 
-**FontUploader Component** (`src/lib/components/FontUploader.svelte`) - ✅ FULLY IMPLEMENTED:
-- Drag-and-drop upload zone with visual feedback
-- WOFF2 magic bytes validation (`0x774F4632`)
-- File size validation (500KB limit)
-- Font limit enforcement (10 per tenant, configurable)
-- Live font preview using dynamic `@font-face` injection
-- Existing fonts list with delete functionality
-- Progress indicator during validation
-- Error/success feedback with accessible alerts
-- Full accessibility (ARIA labels, keyboard navigation)
-- Responsive design with mobile support
+**Font Uploader Server Functions** (`src/lib/server/font-uploader.ts`) - ✅ FULLY IMPLEMENTED:
+- `uploadFont()` - Upload to R2 + register in D1, with rollback on failure
+- `deleteFont()` - Remove from R2 + D1
+- `listFonts()` - List all fonts for tenant
+- `getFont()` - Get single font by ID
+- `countFonts()` - Count fonts per tenant
+- Full R2Bucket type declarations for Cloudflare Workers
 
-**Font Validator Tests** (`tests/font-validator.test.ts`) - ✅ 10 TESTS:
-- WOFF2 signature validation (accept valid, reject invalid)
-- WOFF signature validation (accept valid, reject invalid)
-- File size limit enforcement (500KB max)
-- Font name sanitization (preserve alphanumeric, remove special chars, trim whitespace)
+**Community Themes Server Functions** (`src/lib/server/community-themes.ts`) - ✅ FULLY IMPLEMENTED:
+- `createCommunityTheme()` - Create with auto UUID, defaults, timestamps
+- `getCommunityTheme()` - Get single theme by ID
+- `updateCommunityTheme()` - Dynamic partial updates
+- `deleteCommunityTheme()` - Delete with creator ownership validation
+- `listCommunityThemes()` - Flexible filtering (status, creator, pagination, ordering)
+- `incrementDownloads()` - Atomic download counter
+- `addRating()` - Add 1-5 star ratings
+- `updateThemeStatus()` - Moderation status updates
+- `getThemesByCreator()` - List themes by creator
+- `getApprovedThemes()` - Get approved/featured sorted by downloads
+- `getFeaturedThemes()` - Get featured themes only
 
-**Customizer Integration Tests** (`tests/customizer.test.ts`) - ✅ 9 TESTS:
-- CSS variable generation from themes
-- Color, typography, and layout variables validation
-- Settings merge with custom overrides
-- Base value preservation when partially overridden
-- Accent color variations (light, dark, hover, muted)
-- Tier gating (blocks free/seedling/sapling, allows oak/evergreen)
-
-**ESLint Configuration** (`eslint.config.js`) - ✅ CONFIGURED:
-- ESLint 9.x flat config format
-- TypeScript support with @typescript-eslint
-- Svelte support with eslint-plugin-svelte
-- Separate configs for server, client, and test files
-- Proper ignores for dist/, node_modules/, .svelte-kit/
+**CommunityThemeBrowser Component** (`src/lib/components/CommunityThemeBrowser.svelte`) - ✅ FULLY IMPLEMENTED:
+- Responsive grid layout (1-4 columns)
+- Featured themes section with star badge
+- Theme cards with color palette preview, ratings, downloads, tags
+- Search by name/description/tags
+- Filter by base theme and tags
+- Sort by popular/rating/newest
+- Tier gating for Oak+ users
+- Full accessibility (ARIA, keyboard nav, focus states)
+- Svelte 5 runes ($props, $state, $derived)
 
 ### Test Summary
-- **186 tests passing** (up from 167) - 19 new tests added
-- 8 active test files (all passing, none skipped)
-- All components fully implemented
+- **186 tests passing** - All tests continue to pass
+- Build compiles successfully to `dist/`
+- ESLint: 0 errors, 27 warnings (mostly Svelte 5 migration hints)
 
 ### Actionable Next Steps (Priority Order)
 
-**1. Add R2 storage integration for FontUploader** (Recommended First)
-```bash
-# Read this first:
-cat AgentUsage/cloudflare_guide.md
+**1. Wire up FontUploader to server functions** (Recommended First)
+```typescript
+// In your SvelteKit route (e.g., +server.ts):
+import { uploadFont, deleteFont, listFonts } from '@autumnsgrove/patina/server/font-uploader';
+
+// POST /api/fonts - Upload new font
+// DELETE /api/fonts/:id - Delete font
+// GET /api/fonts - List fonts for tenant
 ```
-- FontUploader component has full client-side validation ready
-- Need to create `src/lib/server/font-uploader.ts` with:
-  - `uploadFont(r2: R2Bucket, tenantId: string, file: ArrayBuffer, filename: string): Promise<string>`
-  - `deleteFont(r2: R2Bucket, path: string): Promise<void>`
-  - `listFonts(db: D1Database, tenantId: string): Promise<CustomFont[]>`
-- Add `custom_fonts` table migration (see `migrations/` for pattern)
-- Wire up FontUploader's `onUpload` callback to server function
+- Create `src/routes/api/fonts/+server.ts` with R2/D1 bindings
+- Connect FontUploader's `onUpload` callback to POST endpoint
+- Connect FontUploader's `onDelete` callback to DELETE endpoint
 
 **2. Create theme thumbnails** (Design Task)
 - Each theme needs a thumbnail at `/static/themes/{id}-thumb.png`
@@ -75,11 +74,24 @@ cat AgentUsage/cloudflare_guide.md
 - 10 themes need thumbnails: grove, minimal, night-garden, moodboard, solarpunk, ocean, wildflower, zine, typewriter, cozy-cabin
 - Can generate programmatically by rendering ThemePreview to canvas
 
-**3. Community Themes (Phase 6)** (Large Feature)
-Start with:
-1. `src/lib/components/CommunityThemeBrowser.svelte` - Grid of community themes
-2. `src/lib/server/community-themes.ts` - CRUD for community_themes table
-3. Update `migrations/` with community_themes schema (already defined in types.ts)
+**3. Complete Community Themes UI**
+```typescript
+// Components needed:
+// - CommunityThemeSubmit.svelte - Form to submit new theme
+// - ModerationQueue.svelte - Admin view for reviewing themes
+// - ThemeRating.svelte - Star rating component
+```
+- Wire CommunityThemeBrowser to server functions via API routes
+- Add theme sharing flow (POST /api/community-themes)
+- Build moderation queue UI for admins
+- Add theme import functionality
+
+**4. Add integration tests for server functions**
+```bash
+# Create these test files:
+# tests/font-uploader.test.ts - Mock R2/D1 and test all functions
+# tests/community-themes.test.ts - Mock D1 and test CRUD operations
+```
 
 ### Important Gotchas for Next Agent
 
@@ -87,8 +99,9 @@ Start with:
 2. **Tier system**: `UserTier = 'free' | 'seedling' | 'sapling' | 'oak' | 'evergreen'` - check `tier-access.ts`
 3. **WCAG compliance**: All themes MUST pass `validateThemeContrast()` - 4.5:1 for body text
 4. **D1 types**: Global `D1Database` declared in `theme-loader.ts` - don't redeclare
-5. **Testing**: Run `pnpm test --run` before committing - all 186 tests must pass
-6. **Build**: Run `pnpm build` to ensure library compiles to `dist/`
+5. **R2 types**: Global `R2Bucket` declared in `font-uploader.ts` - don't redeclare
+6. **Testing**: Run `pnpm test --run` before committing - all 186 tests must pass
+7. **Build**: Run `pnpm build` to ensure library compiles to `dist/`
 
 ### What's Fully Implemented
 
@@ -98,6 +111,7 @@ Start with:
 | `ThemeSelector.svelte` | ✅ Complete |
 | `ThemePreview.svelte` | ✅ Complete |
 | `ColorPanel.svelte` | ✅ Complete |
+| `CommunityThemeBrowser.svelte` | ✅ Complete |
 | `TypographyPanel.svelte` | ✅ Complete |
 | `LayoutPanel.svelte` | ✅ Complete |
 | `CustomCSSEditor.svelte` | ✅ Complete |
@@ -105,6 +119,8 @@ Start with:
 | `FontUploader.svelte` | ✅ Complete |
 | `theme-loader.ts` | ✅ Complete |
 | `theme-saver.ts` | ✅ Complete |
+| `font-uploader.ts` | ✅ Complete (R2 + D1) |
+| `community-themes.ts` | ✅ Complete (Full CRUD) |
 | `font-validator.ts` | ✅ Complete |
 | `css-validator.ts` | ✅ Complete |
 | `contrast.ts` | ✅ Complete |
@@ -385,17 +401,18 @@ src/lib/
 ## Phase 5: Custom Fonts (Evergreen)
 - [x] Build FontUploader component
 - [x] Implement WOFF2 validation (magic bytes, parsing)
-- [ ] Add R2 storage integration
+- [x] Add R2 storage integration (font-uploader.ts server functions)
 - [x] Add font limit enforcement (10 per tenant)
 
 ---
 
 ## Phase 6: Community Themes (Oak+)
 - [ ] Build theme sharing flow
-- [ ] Create community theme browser
+- [x] Create community theme browser (CommunityThemeBrowser.svelte)
+- [x] Implement server CRUD functions (community-themes.ts)
 - [ ] Implement theme import
 - [ ] Build moderation queue
-- [ ] Add rating and download tracking
+- [x] Add rating and download tracking (server functions)
 
 ---
 
@@ -407,4 +424,4 @@ src/lib/
 
 ---
 
-*Last updated: 2025-12-19 - Session 5: FontUploader component, font-validator tests, customizer integration tests, ESLint config. 186 tests passing.*
+*Last updated: 2025-12-19 - Session 6: font-uploader.ts, community-themes.ts, CommunityThemeBrowser.svelte. 186 tests passing.*
