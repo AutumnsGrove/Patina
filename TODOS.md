@@ -10,7 +10,7 @@
 ```bash
 pnpm install      # Install deps (required first!)
 pnpm build        # Build library to dist/
-pnpm test --run   # Run tests (41 passing)
+pnpm test --run   # Run tests (109 passing)
 ```
 
 ### Architecture Overview
@@ -89,16 +89,21 @@ const row = await db
 | File | Status |
 |------|--------|
 | `AccentColorPicker.svelte` | ✅ Fully implemented |
-| `ThemeSelector.svelte` | ⏳ Placeholder |
-| `ThemePreview.svelte` | ⏳ Placeholder |
+| `ThemeSelector.svelte` | ✅ Fully implemented |
+| `ThemePreview.svelte` | ✅ Fully implemented |
 | `ColorPanel.svelte` | ⏳ Placeholder |
 | `theme-loader.ts` | ✅ Fully implemented |
 | `theme-saver.ts` | ✅ Fully implemented |
 | `contrast.ts` | ✅ Fully implemented (41 tests) |
-| `css-vars.ts` | ✅ Fully implemented (needs tests) |
+| `css-vars.ts` | ✅ Fully implemented (38 tests) |
+| `registry.ts` | ✅ Tier filtering implemented |
 | `grove.ts` | ✅ Uses tokens |
 | `minimal.ts` | ✅ Uses tokens |
 | `night-garden.ts` | ✅ Uses tokens |
+| `moodboard.ts` | ✅ WCAG fixed |
+| `solarpunk.ts` | ✅ WCAG fixed |
+| `ocean.ts` | ✅ WCAG fixed |
+| `wildflower.ts` | ✅ WCAG fixed |
 | Other themes | ⏳ Placeholder |
 
 ### Important Gotchas
@@ -110,10 +115,10 @@ const row = await db
 
 ### What's Next (Priority Order)
 
-1. **ThemeSelector component** - Grid of theme cards with tier badges
-2. **ThemePreview component** - Live preview of theme colors
-3. **Validate all themes** - Run `validateThemeContrast()` on each theme
-4. **Test CSS variable generation** - Write tests for `css-vars.ts`
+1. **ColorPanel component** - For theme customizer color editing
+2. **TypographyPanel component** - Font customization UI
+3. **Test theme switching** - Integration tests for theme selection
+4. **Implement remaining themes** - Zine, Typewriter, Cozy Cabin need styling
 
 ### Reference Files
 
@@ -181,7 +186,7 @@ const row = await db
 - [x] Implement `generateSettingsVariables()` for custom overrides
 - [x] Implement `applyThemeVariables()` for runtime application
 - [x] Implement `generateAccentVariations()` using color-mix
-- [ ] Test CSS variable generation
+- [x] Test CSS variable generation (38 tests)
 
 ### Contrast Utilities ✅
 - [x] Implement `getRelativeLuminance()` per WCAG spec
@@ -212,12 +217,12 @@ const row = await db
 - [x] Finalize Night Garden theme (uses grove tokens)
 
 ### Components
-- [ ] Build ThemeSelector component
-- [ ] Build ThemePreview component
-- [ ] Add tier gating logic to theme selection
+- [x] Build ThemeSelector component
+- [x] Build ThemePreview component
+- [x] Add tier gating logic to theme selection (registry.ts)
 
 ### Testing
-- [ ] Validate all themes meet WCAG AA contrast
+- [x] Validate all themes meet WCAG AA contrast (30 tests)
 - [ ] Test theme switching functionality
 - [ ] Test tier-based access control
 
@@ -225,12 +230,12 @@ const row = await db
 
 ## Phase 3: Remaining Themes
 - [ ] Implement Zine theme (bold, magazine-style)
-- [ ] Implement Moodboard theme (Pinterest-style masonry)
+- [x] Fix Moodboard theme WCAG contrast (foregroundMuted → #666666)
 - [ ] Implement Typewriter theme (retro, monospace)
-- [ ] Implement Solarpunk theme (bright, optimistic)
+- [x] Fix Solarpunk theme WCAG contrast (foregroundMuted → grove[700])
 - [ ] Implement Cozy Cabin theme (warm browns)
-- [ ] Implement Ocean theme (cool blues)
-- [ ] Implement Wildflower theme (colorful, playful)
+- [x] Fix Ocean theme WCAG contrast (foregroundMuted → #075985)
+- [x] Fix Wildflower theme WCAG contrast (foregroundMuted → #6d28d9)
 - [ ] Create theme thumbnails
 - [ ] Complete theme preview functionality
 
