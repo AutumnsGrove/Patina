@@ -2,6 +2,7 @@
 // Zine theme - Bold, magazine-style
 
 import type { Theme } from '../types.js';
+import { bark, cream } from '../tokens/colors.js';
 
 export const zine: Theme = {
 	id: 'zine',
@@ -11,12 +12,12 @@ export const zine: Theme = {
 	tier: 'sapling',
 
 	colors: {
-		background: '#fffef5',
+		background: cream[100],
 		surface: '#ffffff',
-		foreground: '#000000',
-		foregroundMuted: '#555555',
+		foreground: bark[950],
+		foregroundMuted: bark[700],
 		accent: '#ff3366',
-		border: '#000000'
+		border: bark[950]
 	},
 
 	fonts: {
