@@ -1,5 +1,5 @@
 /**
- * Theme Store for Patina
+ * Theme Store for Foliage
  * Manages light/dark/system theme preferences
  */
 

@@ -1,6 +1,6 @@
 /**
  * Tokens index
- * Exports all Patina design tokens
+ * Exports all Foliage design tokens
  */
 
 export {

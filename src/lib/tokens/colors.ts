@@ -1,7 +1,7 @@
 /**
- * Patina Design System - Color Tokens
+ * Foliage Design System - Color Tokens
  *
- * All color values for the Patina design system.
+ * All color values for the Foliage design system.
  * Adapted from Grove Design System.
  */
 

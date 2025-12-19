@@ -111,7 +111,7 @@
 		</a>
 
 		<!-- Code block -->
-		<code style={codeStyles}>const greeting = "Hello, Patina!";</code>
+		<code style={codeStyles}>const greeting = "Hello, Foliage!";</code>
 
 		<!-- Surface card example -->
 		<div style={surfaceStyles}>

@@ -1,5 +1,5 @@
 {
-  "name": "@autumnsgrove/patina",
+  "name": "@autumnsgrove/foliage",
   "version": "0.1.0",
   "description": "Theme system for Grove — personal expression with modern guardrails",
   "type": "module",
@@ -71,6 +71,6 @@
   "license": "AGPL-3.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/AutumnsGrove/Patina.git"
+    "url": "https://github.com/AutumnsGrove/Foliage.git"
   }
 }

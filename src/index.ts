@@ -1,4 +1,4 @@
-// @autumnsgrove/patina - Package Entry Point
+// @autumnsgrove/foliage - Package Entry Point
 // Theme system for Grove — personal expression with modern guardrails
 
 // Re-export types

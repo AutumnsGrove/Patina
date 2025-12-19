@@ -5,7 +5,7 @@
 ---
 
 ## Project Purpose
-Patina is Grove's theme system — providing visual customization from simple accent colors to full theme customizers. It enables MySpace-level personalization with modern design sensibilities: make your blog feel like *yours*.
+Foliage is Grove's theme system — providing visual customization from simple accent colors to full theme customizers. It enables MySpace-level personalization with modern design sensibilities: make your blog feel like *yours*.
 
 ## Tech Stack
 - **Language:** TypeScript
@@ -16,7 +16,7 @@ Patina is Grove's theme system — providing visual customization from simple ac
 - **Storage:** R2 for custom fonts
 
 ## Architecture Notes
-- **Package name:** `@autumnsgrove/patina`
+- **Package name:** `@autumnsgrove/foliage`
 - **Tiered feature access:** Free → Seedling → Sapling → Oak → Evergreen
 - **10 curated themes** with tier-based unlocking
 - **Theme Customizer** (Oak+) for full color/typography/layout control

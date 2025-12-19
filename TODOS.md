@@ -1,4 +1,4 @@
-# Patina - TODOs
+# Foliage - TODOs
 
 > Theme system for Grove — personal expression with modern guardrails
 
@@ -58,7 +58,7 @@ pnpm lint         # Run ESLint (0 errors, warnings only)
 **1. Wire up FontUploader to server functions** (Recommended First)
 ```typescript
 // In your SvelteKit route (e.g., +server.ts):
-import { uploadFont, deleteFont, listFonts } from '@autumnsgrove/patina/server/font-uploader';
+import { uploadFont, deleteFont, listFonts } from '@autumnsgrove/foliage/server/font-uploader';
 
 // POST /api/fonts - Upload new font
 // DELETE /api/fonts/:id - Delete font
@@ -424,4 +424,4 @@ src/lib/
 
 ---
 
-*Last updated: 2025-12-19 - Session 6: font-uploader.ts, community-themes.ts, CommunityThemeBrowser.svelte. 186 tests passing.*
+*Last updated: 2025-12-19 - Session 7: Renamed project from Patina to Foliage. 186 tests passing.*

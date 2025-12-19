@@ -1,6 +1,6 @@
 /**
  * Stores index
- * Exports all Patina stores
+ * Exports all Foliage stores
  */
 
 export { themeStore } from './theme.js';
