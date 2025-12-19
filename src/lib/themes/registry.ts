@@ -38,10 +38,23 @@ export function getTheme(id: string): Theme | undefined {
 
 /**
  * Get themes available for a given user tier
+ * - Free: no themes
  * - Seedling: grove, minimal, night-garden
  * - Sapling+: all themes
  */
 export function getThemesForTier(tier: UserTier): Theme[] {
-	// TODO: Implement tier filtering logic
-	return Object.values(themes);
+	const allThemes = Object.values(themes);
+
+	switch (tier) {
+		case 'free':
+			return [];
+		case 'seedling':
+			return allThemes.filter((theme) => theme.tier === 'seedling');
+		case 'sapling':
+		case 'oak':
+		case 'evergreen':
+			return allThemes;
+		default:
+			return [];
+	}
 }

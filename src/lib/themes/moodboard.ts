@@ -3,6 +3,16 @@
 
 import type { Theme } from '../types.js';
 
+// Moodboard uses neutral grays with a pop of rose for accent
+const palette = {
+	background: '#f5f5f5', // Light gray background
+	surface: '#ffffff', // White surface
+	foreground: '#333333', // Dark gray text
+	foregroundMuted: '#666666', // Medium gray for muted text (meets 4.5:1 contrast)
+	accent: '#e11d48', // Rose accent
+	border: '#e0e0e0' // Light gray border
+} as const;
+
 export const moodboard: Theme = {
 	id: 'moodboard',
 	name: 'Moodboard',
@@ -11,12 +21,12 @@ export const moodboard: Theme = {
 	tier: 'sapling',
 
 	colors: {
-		background: '#f5f5f5',
-		surface: '#ffffff',
-		foreground: '#333333',
-		foregroundMuted: '#888888',
-		accent: '#e11d48',
-		border: '#e0e0e0'
+		background: palette.background,
+		surface: palette.surface,
+		foreground: palette.foreground,
+		foregroundMuted: palette.foregroundMuted,
+		accent: palette.accent,
+		border: palette.border
 	},
 
 	fonts: {
