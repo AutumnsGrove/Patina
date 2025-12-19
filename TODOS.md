@@ -8,51 +8,48 @@
 
 ### What Was Completed This Session
 
-**Groveengine Integration:**
-- Cloned groveengine repo to `/tmp/groveengine` for reference
-- Extracted color tokens from `packages/engine/src/lib/ui/tokens/colors.ts`
-- Created `src/lib/tokens/colors.ts` with grove (green), cream, bark color scales
-- Created `src/lib/stores/theme.ts` for light/dark/system theme switching
+**AccentColorPicker Component (fully implemented):**
+- Color picker UI with native `<input type="color">` and hex input
+- Preset color swatches using grove palette colors
+- Live contrast preview against background color
+- WCAG AA compliance indicator
+- Full accessibility (keyboard navigation, ARIA labels)
+- Syncs with external value changes
 
-**Contrast Utilities (fully implemented):**
-- `getRelativeLuminance()` - WCAG 2.1 compliant luminance calculation
-- `getContrastRatio()` - contrast ratio between two colors
-- `meetsWCAGAA()` / `meetsWCAGAAA()` - accessibility checks
-- `validateThemeContrast()` - validates all theme color combinations
-- `suggestReadableColor()` - suggests readable fg color for any bg
-- **41 tests passing** in `tests/contrast.test.ts`
+**Database Integration (fully implemented):**
+- `loadThemeSettings()` - queries D1 for tenant settings
+- `loadThemeSettingsWithDefaults()` - returns defaults if no settings exist
+- `hasThemeSettings()` - checks if tenant has custom settings
+- `saveThemeSettings()` - upserts full theme settings (INSERT ON CONFLICT)
+- `updateAccentColor()` - updates just accent color
+- `updateThemeId()` - updates just theme ID
+- `updateCustomColors()` - updates custom color overrides
+- `updateCustomCSS()` - updates custom CSS
+- `setCustomizerEnabled()` - toggles customizer
+- `resetThemeSettings()` - deletes settings to reset to defaults
 
-**CSS Variable System (fully implemented):**
-- `generateThemeVariables()` - generates CSS custom properties from theme
-- `generateSettingsVariables()` - merges base theme with user overrides
-- `applyThemeVariables()` - applies variables to DOM at runtime
-- `generateAccentVariations()` - uses CSS `color-mix()` for accent shades
-
-**Grove Theme Updated:**
-- Now uses groveengine semantic colors
-- Background: cream (#fefdfb), foreground: bark (#3d2914), accent: grove[600]
+**Theme Token System Updates:**
+- Minimal theme now uses `bark` tokens for warm text colors
+- Night Garden theme now uses `grove` tokens for accent and foreground
 
 ### Key Files Changed
 ```
 src/lib/
-├── stores/
-│   ├── index.ts      (new - exports themeStore)
-│   └── theme.ts      (new - light/dark/system store)
-├── tokens/
-│   ├── index.ts      (new - exports color tokens)
-│   └── colors.ts     (new - grove/cream/bark/semantic colors)
+├── components/
+│   └── AccentColorPicker.svelte  (implemented - full color picker UI)
+├── server/
+│   ├── theme-loader.ts           (implemented - D1 queries)
+│   └── theme-saver.ts            (implemented - D1 upserts)
 ├── themes/
-│   └── grove.ts      (updated - uses token imports)
-└── utils/
-    ├── contrast.ts   (implemented - WCAG utilities)
-    └── css-vars.ts   (implemented - CSS generation)
+│   ├── minimal.ts                (updated - uses bark tokens)
+│   └── night-garden.ts           (updated - uses grove tokens)
 ```
 
 ### What's Next (Priority Order)
-1. **AccentColorPicker component** - UI for color selection with live preview
-2. **Database integration** - `loadThemeSettings()` and `saveThemeSettings()`
-3. **Update remaining themes** (Minimal, Night Garden) to use token system
-4. **ESLint/Prettier setup** - code quality tooling
+1. **ESLint/Prettier setup** - code quality tooling
+2. **Test CSS variable generation** - write tests for css-vars.ts
+3. **ThemeSelector component** - UI for choosing themes
+4. **ThemePreview component** - visual theme preview
 
 ### Build Commands
 ```bash
@@ -63,7 +60,6 @@ pnpm test --run   # Run tests once without watch
 ```
 
 ### Reference
-- Groveengine colors: `/tmp/groveengine/packages/engine/src/lib/ui/tokens/colors.ts`
 - Theme spec: `docs/specs/theme-system-spec.md`
 
 ---
@@ -108,25 +104,25 @@ pnpm test --run   # Run tests once without watch
 - [x] Implement `suggestReadableColor()` helper
 - [x] Write tests for contrast utilities (41 tests passing)
 
-### AccentColorPicker Component
-- [ ] Design color picker UI
-- [ ] Implement color selection logic
-- [ ] Add live preview
-- [ ] Add accessibility (keyboard navigation, labels)
+### AccentColorPicker Component ✅
+- [x] Design color picker UI
+- [x] Implement color selection logic
+- [x] Add live preview
+- [x] Add accessibility (keyboard navigation, labels)
 
-### Database Integration
-- [ ] Implement `loadThemeSettings()` in theme-loader.ts
-- [ ] Implement `saveThemeSettings()` in theme-saver.ts
-- [ ] Test with D1 database
+### Database Integration ✅
+- [x] Implement `loadThemeSettings()` in theme-loader.ts
+- [x] Implement `saveThemeSettings()` in theme-saver.ts
+- [ ] Test with D1 database (requires deployed environment)
 
 ---
 
 ## Phase 2: Curated Themes
 
 ### Theme Design
-- [ ] Finalize Grove theme colors and styling
-- [ ] Finalize Minimal theme
-- [ ] Finalize Night Garden theme (dark mode)
+- [x] Finalize Grove theme colors and styling (uses token system)
+- [x] Finalize Minimal theme (uses bark tokens)
+- [x] Finalize Night Garden theme (uses grove tokens)
 
 ### Components
 - [ ] Build ThemeSelector component
@@ -189,4 +185,4 @@ pnpm test --run   # Run tests once without watch
 
 ---
 
-*Last updated: Phase 1 foundation - groveengine integration, contrast utilities, CSS variable system*
+*Last updated: Phase 1 complete - AccentColorPicker, database integration, theme token updates*
