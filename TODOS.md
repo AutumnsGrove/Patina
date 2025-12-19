@@ -4,16 +4,111 @@
 
 ---
 
-## 🚀 Session Handoff Notes (2025-12-19 - Session 2)
+## 🚀 Session Handoff Notes (2025-12-19 - Session 3)
 
 ### Quick Start for Next Agent
 ```bash
 pnpm install      # Install deps (required first!)
 pnpm build        # Build library to dist/
-pnpm test --run   # Run tests (109 passing)
+pnpm test --run   # Run tests (148 passing)
 ```
 
 ### What Was Completed This Session
+
+**ColorPanel Component** (`src/lib/components/ColorPanel.svelte`):
+- Color inputs for all ThemeColors properties (background, surface, foreground, foregroundMuted, accent, border)
+- Native color picker + hex input with validation
+- Live WCAG AA contrast checking for text colors
+- 6 preset color palettes (Light, Dark, Sepia, Forest, Ocean, Sunset)
+- Reset buttons (individual and "Reset All")
+- Full accessibility (ARIA labels, keyboard nav, focus states)
+
+**TypographyPanel Component** (`src/lib/components/TypographyPanel.svelte`):
+- Font family selectors for heading, body, and mono fonts
+- System font stacks (System UI, Arial, Georgia, Times New Roman, etc.)
+- Monospace font options (UI Monospace, Courier New, Monaco, Consolas)
+- Live font previews for each font role
+- Custom fonts section (for Evergreen tier)
+- Full accessibility with proper ARIA labels
+
+**Theme Token System Updates**:
+- Updated Zine theme to use bark/cream tokens (warm alternative to pure black)
+- Updated Typewriter theme to use cream[300] background, bark tokens for text
+- Updated Cozy Cabin theme (dark theme) with bark[950]/[900] backgrounds, cream foreground
+
+**Integration Tests**:
+- `tests/theme-switching.test.ts` (17 tests): Theme retrieval, CSS variable generation, settings overrides
+- `tests/tier-access.test.ts` (22 tests): Tier hierarchy, theme access per tier, feature gating
+
+### Test Summary
+- **148 tests passing** (up from 109)
+- 5 active test files, 3 skipped (future features)
+
+### Actionable Next Steps (Priority Order)
+
+**1. Build LayoutPanel component** (`src/lib/components/LayoutPanel.svelte`)
+```bash
+# Currently a placeholder - needs full implementation
+# Reference: ColorPanel.svelte and TypographyPanel.svelte for patterns
+```
+Features needed:
+- Layout type selector: `sidebar | no-sidebar | centered | full-width | grid | masonry`
+- Max width input (with presets like 1000px, 1200px, 1400px)
+- Spacing mode: `compact | comfortable | spacious`
+- Live preview of layout changes
+
+**2. Build ThemeCustomizer component** (`src/lib/components/ThemeCustomizer.svelte`)
+```bash
+# Currently a placeholder - this is the main customizer sidebar
+```
+Features needed:
+- Combine ColorPanel, TypographyPanel, LayoutPanel in a tabbed/accordion UI
+- Save button that calls `saveThemeSettings()` from `theme-saver.ts`
+- Reset button that reverts to base theme defaults
+- Live preview integration with ThemePreview component
+
+**3. Implement CustomCSSEditor** (`src/lib/components/CustomCSSEditor.svelte`)
+```bash
+# Currently a placeholder - see tests/css-validator.test.ts for validation logic (skipped)
+```
+Features needed:
+- Textarea for custom CSS input
+- 10KB size limit validation
+- Block dangerous properties (`@import`, `url()`, `expression()`)
+- Live preview of CSS effects
+
+**4. Create theme thumbnails**
+- Each theme needs a `/themes/{id}-thumb.png`
+- Could be generated programmatically or designed manually
+
+### Component Patterns to Follow
+
+All components use Svelte 5 runes:
+```typescript
+// Props with defaults
+let { value = defaultValue, onChange }: Props = $props();
+
+// Local state
+let localState = $state(value);
+
+// Derived values
+let computed = $derived(someCalculation(localState));
+
+// Side effects
+$effect(() => {
+  // React to changes
+});
+```
+
+See `ColorPanel.svelte` for the most comprehensive example with:
+- Multiple color inputs with validation
+- Preset palettes
+- Reset functionality
+- WCAG contrast checking
+
+---
+
+## Previous Session Work (Session 2)
 
 **ThemeSelector Component** (`src/lib/components/ThemeSelector.svelte`):
 - Responsive grid layout (1-4 columns based on viewport)
@@ -58,10 +153,10 @@ pnpm test --run   # Run tests (109 passing)
 **Key directories:**
 ```
 src/lib/
-├── components/     # Svelte 5 components (AccentColorPicker, ThemeSelector, ThemePreview done)
+├── components/     # Svelte 5 components (6 implemented: AccentColorPicker, ThemeSelector, ThemePreview, ColorPanel, TypographyPanel)
 ├── server/         # D1 database functions (theme-loader.ts, theme-saver.ts - both implemented)
 ├── stores/         # Svelte stores (theme.ts for light/dark/system mode)
-├── themes/         # Theme definitions (all 10 themes pass WCAG AA)
+├── themes/         # Theme definitions (all 10 themes use token system, pass WCAG AA)
 ├── tokens/         # Color tokens from groveengine (grove, cream, bark scales)
 ├── utils/          # Utilities (contrast.ts, css-vars.ts - both implemented & tested)
 └── types.ts        # TypeScript interfaces
@@ -125,7 +220,12 @@ const row = await db
 | `AccentColorPicker.svelte` | ✅ Fully implemented |
 | `ThemeSelector.svelte` | ✅ Fully implemented |
 | `ThemePreview.svelte` | ✅ Fully implemented |
-| `ColorPanel.svelte` | ⏳ Placeholder |
+| `ColorPanel.svelte` | ✅ Fully implemented |
+| `TypographyPanel.svelte` | ✅ Fully implemented |
+| `LayoutPanel.svelte` | ⏳ Placeholder |
+| `CustomCSSEditor.svelte` | ⏳ Placeholder |
+| `ThemeCustomizer.svelte` | ⏳ Placeholder |
+| `FontUploader.svelte` | ⏳ Placeholder |
 | `theme-loader.ts` | ✅ Fully implemented |
 | `theme-saver.ts` | ✅ Fully implemented |
 | `contrast.ts` | ✅ Fully implemented (41 tests) |
@@ -138,7 +238,9 @@ const row = await db
 | `solarpunk.ts` | ✅ WCAG fixed |
 | `ocean.ts` | ✅ WCAG fixed |
 | `wildflower.ts` | ✅ WCAG fixed |
-| Other themes | ⏳ Placeholder |
+| `zine.ts` | ✅ Uses tokens |
+| `typewriter.ts` | ✅ Uses tokens |
+| `cozy-cabin.ts` | ✅ Uses tokens |
 
 ### Important Gotchas
 
@@ -149,36 +251,35 @@ const row = await db
 
 ### What's Next (Priority Order)
 
-1. **ColorPanel component** (`src/lib/components/ColorPanel.svelte`)
-   - Color editing UI for theme customizer (Phase 4)
-   - Should use AccentColorPicker as reference for patterns
-   - Needs to edit all ThemeColors properties
+1. **LayoutPanel component** (`src/lib/components/LayoutPanel.svelte`)
+   - Layout type selection (sidebar, centered, full-width, grid, masonry)
+   - Max width control
+   - Spacing mode (compact, comfortable, spacious)
 
-2. **TypographyPanel component** (`src/lib/components/TypographyPanel.svelte`)
-   - Font family selection for heading, body, mono
-   - Font stack preview
-   - System fonts + custom font support (Evergreen tier)
+2. **ThemeCustomizer component** (`src/lib/components/ThemeCustomizer.svelte`)
+   - Sidebar UI combining ColorPanel, TypographyPanel, LayoutPanel
+   - Live preview integration
+   - Save/reset functionality
 
-3. **Remaining theme styling** (Phase 3)
-   - Zine: bold, magazine-style - needs unique fonts/colors
-   - Typewriter: retro, monospace aesthetic
-   - Cozy Cabin: warm browns (use bark tokens)
-   - All must pass `validateThemeContrast()` - run tests!
+3. **CustomCSSEditor component** (`src/lib/components/CustomCSSEditor.svelte`)
+   - CSS textarea with syntax highlighting (optional)
+   - Validation (10KB limit, no dangerous properties)
+   - Live preview of custom CSS
 
-4. **Integration tests**
-   - Theme switching functionality
-   - Tier-based access control in ThemeSelector
+4. **FontUploader component** (Phase 5 - Evergreen)
+   - WOFF2 file upload and validation
+   - R2 storage integration
 
 ### Recommended Approach
 
-For **ColorPanel**, follow this pattern from AccentColorPicker:
+For **LayoutPanel**, follow this pattern:
 ```svelte
 <script lang="ts">
   interface Props {
-    colors: ThemeColors;
-    onChange?: (colors: Partial<ThemeColors>) => void;
+    layout: ThemeLayout;
+    onChange?: (layout: Partial<ThemeLayout>) => void;
   }
-  let { colors, onChange }: Props = $props();
+  let { layout, onChange }: Props = $props();
 </script>
 ```
 
@@ -290,29 +391,29 @@ pnpm test tests/themes.test.ts
 
 ### Testing
 - [x] Validate all themes meet WCAG AA contrast (30 tests)
-- [ ] Test theme switching functionality
-- [ ] Test tier-based access control
+- [x] Test theme switching functionality (17 tests in theme-switching.test.ts)
+- [x] Test tier-based access control (22 tests in tier-access.test.ts)
 
 ---
 
-## Phase 3: Remaining Themes
-- [ ] Implement Zine theme (bold, magazine-style)
+## Phase 3: Remaining Themes ✅
+- [x] Implement Zine theme (bold, magazine-style) - uses bark/cream tokens
 - [x] Fix Moodboard theme WCAG contrast (foregroundMuted → #666666)
-- [ ] Implement Typewriter theme (retro, monospace)
+- [x] Implement Typewriter theme (retro, monospace) - uses cream[300], bark tokens
 - [x] Fix Solarpunk theme WCAG contrast (foregroundMuted → grove[700])
-- [ ] Implement Cozy Cabin theme (warm browns)
+- [x] Implement Cozy Cabin theme (warm browns) - dark theme with bark[950]/[900]
 - [x] Fix Ocean theme WCAG contrast (foregroundMuted → #075985)
 - [x] Fix Wildflower theme WCAG contrast (foregroundMuted → #6d28d9)
 - [ ] Create theme thumbnails
-- [ ] Complete theme preview functionality
+- [x] Complete theme preview functionality (ThemePreview component)
 
 ---
 
 ## Phase 4: Theme Customizer (Oak+)
-- [ ] Build customizer sidebar UI
+- [ ] Build customizer sidebar UI (ThemeCustomizer.svelte)
 - [ ] Implement live preview system
-- [ ] Build ColorPanel component
-- [ ] Build TypographyPanel component
+- [x] Build ColorPanel component - 6 color inputs with presets and WCAG validation
+- [x] Build TypographyPanel component - font selectors with live preview
 - [ ] Build LayoutPanel component
 - [ ] Implement CustomCSSEditor with validation
 - [ ] Add reset to default functionality
@@ -344,4 +445,4 @@ pnpm test tests/themes.test.ts
 
 ---
 
-*Last updated: 2025-12-19 - Phase 2 complete: ThemeSelector, ThemePreview, theme validation, 109 tests passing*
+*Last updated: 2025-12-19 - Session 3: ColorPanel, TypographyPanel, theme tokens, integration tests. 148 tests passing.*

@@ -2,6 +2,7 @@
 // Cozy Cabin theme - Warm browns, intimate
 
 import type { Theme } from '../types.js';
+import { bark, cream, status } from '../tokens/colors.js';
 
 export const cozyCabin: Theme = {
 	id: 'cozy-cabin',
@@ -11,12 +12,12 @@ export const cozyCabin: Theme = {
 	tier: 'sapling',
 
 	colors: {
-		background: '#2c1810',
-		surface: '#3d261c',
-		foreground: '#f5e6d3',
-		foregroundMuted: '#c9a88a',
-		accent: '#f59e0b',
-		border: '#5c4033'
+		background: bark[950],
+		surface: bark[900],
+		foreground: cream[100],
+		foregroundMuted: bark[300],
+		accent: status.warning.DEFAULT,
+		border: bark[800]
 	},
 
 	fonts: {

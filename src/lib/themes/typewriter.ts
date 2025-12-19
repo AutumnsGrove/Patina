@@ -2,6 +2,7 @@
 // Typewriter theme - Retro, monospace, paper
 
 import type { Theme } from '../types.js';
+import { bark, cream } from '../tokens/colors.js';
 
 export const typewriter: Theme = {
 	id: 'typewriter',
@@ -11,12 +12,12 @@ export const typewriter: Theme = {
 	tier: 'sapling',
 
 	colors: {
-		background: '#f4f1ea',
-		surface: '#faf8f5',
-		foreground: '#2d2d2d',
-		foregroundMuted: '#666666',
-		accent: '#8b4513',
-		border: '#d4cfc5'
+		background: cream[300],
+		surface: cream[200],
+		foreground: bark[950],
+		foregroundMuted: bark[700],
+		accent: bark[600],
+		border: cream[500]
 	},
 
 	fonts: {
