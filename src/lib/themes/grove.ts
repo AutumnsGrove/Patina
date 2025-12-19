@@ -2,6 +2,7 @@
 // Grove theme - Warm, earthy, cozy (Default theme)
 
 import type { Theme } from '../types.js';
+import { grove as groveColors, bark, cream, semantic } from '../tokens/colors.js';
 
 export const grove: Theme = {
 	id: 'grove',
@@ -11,12 +12,12 @@ export const grove: Theme = {
 	tier: 'seedling',
 
 	colors: {
-		background: '#faf8f5',
-		surface: '#ffffff',
-		foreground: '#1a1a1a',
-		foregroundMuted: '#6b6b6b',
-		accent: '#4f46e5',
-		border: '#e5e5e5'
+		background: semantic.background,
+		surface: cream[50],
+		foreground: semantic.foreground,
+		foregroundMuted: bark[700],
+		accent: groveColors[600],
+		border: semantic.border
 	},
 
 	fonts: {

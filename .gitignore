@@ -1,5 +1,32 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+.svelte-kit/
+
+# Environment and secrets
 secrets.json
+.env
+.env.*
+!.env.example
+
+# Logs
 *.log
-__pycache__/
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# IDE
 .claude/
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Test coverage
+coverage/
