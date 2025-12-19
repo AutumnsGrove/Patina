@@ -4,16 +4,145 @@
 
 ---
 
-## 🚀 Session Handoff Notes (2025-12-19 - Session 3)
+## 🚀 Session Handoff Notes (2025-12-19 - Session 4)
 
 ### Quick Start for Next Agent
 ```bash
 pnpm install      # Install deps (required first!)
 pnpm build        # Build library to dist/
-pnpm test --run   # Run tests (148 passing)
+pnpm test --run   # Run tests (167 passing)
 ```
 
 ### What Was Completed This Session
+
+**LayoutPanel Component** (`src/lib/components/LayoutPanel.svelte`):
+- Layout type selector with 6 options: sidebar, no-sidebar, centered, full-width, grid, masonry
+- Visual preview diagrams for each layout type
+- Max width input with presets (1000px, 1200px, 1400px, 1600px) + custom CSS validation
+- Spacing mode selection: compact, comfortable, spacious
+- Reset buttons for individual fields and "Reset All"
+- Full accessibility (ARIA labels, keyboard navigation, focus states)
+
+**ThemeCustomizer Component** (`src/lib/components/ThemeCustomizer.svelte`):
+- Tabbed UI with 4 sections: Colors, Typography, Layout, Custom CSS
+- Integrates ColorPanel, TypographyPanel, LayoutPanel, CustomCSSEditor
+- State management for all customizations with unsaved changes detection
+- Save button (calls onSave with updated ThemeSettings)
+- Reset to Default and Cancel buttons
+- Exports `effectiveTheme` for live preview integration
+- Keyboard navigation between tabs (arrow keys)
+- Full accessibility with ARIA roles and labels
+
+**CustomCSSEditor Component** (`src/lib/components/CustomCSSEditor.svelte`):
+- Large textarea with dark code editor aesthetic
+- 10KB size limit with visual progress bar
+- Security validation blocking dangerous patterns:
+  - `@import` statements
+  - `javascript:` URLs
+  - `expression()` (IE vulnerability)
+  - `behavior:` (IE vulnerability)
+  - `-moz-binding` (Firefox vulnerability)
+  - `<script>` tags
+  - External URLs in `url()`
+- Real-time validation feedback with error/warning display
+- CSS variable hints section
+- Character, line, and byte count display
+- Clear button
+
+**CSS Validator Tests** (`tests/css-validator.test.ts`):
+- 19 tests for CSS validation logic
+- Size limit tests (under limit, over limit, warning threshold)
+- Blocked patterns tests (all 8 dangerous patterns)
+- URL validation tests (CSS variables, data URIs, relative URLs)
+- Valid CSS tests (custom properties, animations, gradients)
+
+### Test Summary
+- **167 tests passing** (up from 148)
+- 6 active test files, 2 skipped (future features: customizer integration, font validator)
+
+### Actionable Next Steps (Priority Order)
+
+**1. Create theme thumbnails**
+- Each theme needs a `/themes/{id}-thumb.png`
+- Could be generated programmatically or designed manually
+- 10 themes need thumbnails: grove, minimal, night-garden, moodboard, solarpunk, ocean, wildflower, zine, typewriter, cozy-cabin
+
+**2. Build FontUploader component** (`src/lib/components/FontUploader.svelte`)
+```bash
+# Currently a placeholder - Phase 5 (Evergreen tier)
+# Reference: CustomCSSEditor.svelte for validation patterns
+```
+Features needed:
+- WOFF2 file upload with drag-and-drop
+- File size validation (500KB limit)
+- Magic bytes validation for WOFF2 (`0x774F4632`)
+- R2 storage integration (see `AgentUsage/cloudflare_guide.md`)
+- Font limit enforcement (10 per tenant)
+- Progress indicator during upload
+- Preview of uploaded font
+
+**3. Implement Customizer Integration Tests** (`tests/customizer.test.ts`)
+- Currently skipped - needs component testing setup
+- Test CSS variable generation, settings merge, tier gating
+
+### Reference Files
+
+- **Spec**: `docs/specs/theme-system-spec.md` - Full feature requirements
+- **Types**: `src/lib/types.ts` - All TypeScript interfaces
+- **Migrations**: `migrations/*.sql` - Database schema
+- **Token Colors**: `src/lib/tokens/colors.ts` - grove, bark, cream scales
+
+### Recommended Approach for FontUploader
+
+Follow the CustomCSSEditor pattern:
+```svelte
+<script lang="ts">
+  interface Props {
+    tenantId: string;
+    existingFonts?: CustomFont[];
+    maxFonts?: number;
+    maxSize?: number;
+    onUpload?: (font: CustomFont) => void;
+    onError?: (error: string) => void;
+  }
+  let { tenantId, existingFonts = [], maxFonts = 10, maxSize = 512000, onUpload, onError }: Props = $props();
+
+  // Validate WOFF2 magic bytes
+  function isValidWOFF2(buffer: ArrayBuffer): boolean {
+    const view = new DataView(buffer);
+    return view.getUint32(0) === 0x774F4632; // 'wOF2'
+  }
+</script>
+```
+
+### Component Patterns to Follow
+
+All components use Svelte 5 runes:
+```typescript
+// Props with defaults
+let { value = defaultValue, onChange }: Props = $props();
+
+// Local state
+let localState = $state(value);
+
+// Derived values
+let computed = $derived(someCalculation(localState));
+
+// Side effects
+$effect(() => {
+  // React to changes
+});
+```
+
+See `ThemeCustomizer.svelte` for a comprehensive example combining multiple panels with:
+- Tabbed navigation with keyboard support
+- State management across multiple panels
+- Save/reset functionality
+- Unsaved changes detection
+
+---
+
+## Previous Session Work (Session 3)
 
 **ColorPanel Component** (`src/lib/components/ColorPanel.svelte`):
 - Color inputs for all ThemeColors properties (background, surface, foreground, foregroundMuted, accent, border)
@@ -39,72 +168,6 @@ pnpm test --run   # Run tests (148 passing)
 **Integration Tests**:
 - `tests/theme-switching.test.ts` (17 tests): Theme retrieval, CSS variable generation, settings overrides
 - `tests/tier-access.test.ts` (22 tests): Tier hierarchy, theme access per tier, feature gating
-
-### Test Summary
-- **148 tests passing** (up from 109)
-- 5 active test files, 3 skipped (future features)
-
-### Actionable Next Steps (Priority Order)
-
-**1. Build LayoutPanel component** (`src/lib/components/LayoutPanel.svelte`)
-```bash
-# Currently a placeholder - needs full implementation
-# Reference: ColorPanel.svelte and TypographyPanel.svelte for patterns
-```
-Features needed:
-- Layout type selector: `sidebar | no-sidebar | centered | full-width | grid | masonry`
-- Max width input (with presets like 1000px, 1200px, 1400px)
-- Spacing mode: `compact | comfortable | spacious`
-- Live preview of layout changes
-
-**2. Build ThemeCustomizer component** (`src/lib/components/ThemeCustomizer.svelte`)
-```bash
-# Currently a placeholder - this is the main customizer sidebar
-```
-Features needed:
-- Combine ColorPanel, TypographyPanel, LayoutPanel in a tabbed/accordion UI
-- Save button that calls `saveThemeSettings()` from `theme-saver.ts`
-- Reset button that reverts to base theme defaults
-- Live preview integration with ThemePreview component
-
-**3. Implement CustomCSSEditor** (`src/lib/components/CustomCSSEditor.svelte`)
-```bash
-# Currently a placeholder - see tests/css-validator.test.ts for validation logic (skipped)
-```
-Features needed:
-- Textarea for custom CSS input
-- 10KB size limit validation
-- Block dangerous properties (`@import`, `url()`, `expression()`)
-- Live preview of CSS effects
-
-**4. Create theme thumbnails**
-- Each theme needs a `/themes/{id}-thumb.png`
-- Could be generated programmatically or designed manually
-
-### Component Patterns to Follow
-
-All components use Svelte 5 runes:
-```typescript
-// Props with defaults
-let { value = defaultValue, onChange }: Props = $props();
-
-// Local state
-let localState = $state(value);
-
-// Derived values
-let computed = $derived(someCalculation(localState));
-
-// Side effects
-$effect(() => {
-  // React to changes
-});
-```
-
-See `ColorPanel.svelte` for the most comprehensive example with:
-- Multiple color inputs with validation
-- Preset palettes
-- Reset functionality
-- WCAG contrast checking
 
 ---
 
@@ -153,64 +216,13 @@ See `ColorPanel.svelte` for the most comprehensive example with:
 **Key directories:**
 ```
 src/lib/
-├── components/     # Svelte 5 components (6 implemented: AccentColorPicker, ThemeSelector, ThemePreview, ColorPanel, TypographyPanel)
-├── server/         # D1 database functions (theme-loader.ts, theme-saver.ts - both implemented)
+├── components/     # Svelte 5 components (9 implemented)
+├── server/         # D1 database functions (theme-loader.ts, theme-saver.ts)
 ├── stores/         # Svelte stores (theme.ts for light/dark/system mode)
 ├── themes/         # Theme definitions (all 10 themes use token system, pass WCAG AA)
 ├── tokens/         # Color tokens from groveengine (grove, cream, bark scales)
-├── utils/          # Utilities (contrast.ts, css-vars.ts - both implemented & tested)
+├── utils/          # Utilities (contrast.ts, css-vars.ts)
 └── types.ts        # TypeScript interfaces
-```
-
-### Token System Explained
-
-Instead of hardcoding hex colors, we import from `src/lib/tokens/colors.ts`:
-
-```typescript
-import { grove, bark, cream, semantic } from '../tokens/colors.js';
-
-// Color scales (50=lightest, 950=darkest)
-grove[600]  // '#16a34a' - primary green
-bark[900]   // '#3d2914' - primary brown
-cream[50]   // '#fefdfb' - primary cream
-
-// Semantic colors (named by purpose)
-semantic.background  // cream.DEFAULT
-semantic.foreground  // bark.DEFAULT
-```
-
-**When adding new themes**, import tokens and create a local palette object:
-```typescript
-const myPalette = {
-  background: cream[50],
-  accent: grove[600],
-  // custom colors as needed
-} as const;
-```
-
-### Patterns to Follow
-
-**Svelte 5 Runes** (NOT Svelte 4 syntax):
-```typescript
-// Props
-let { value, onChange }: Props = $props();
-
-// State
-let hexInput = $state(value);
-
-// Derived
-let contrastRatio = $derived(getContrastRatio(value, bg));
-
-// Effects
-$effect(() => { /* runs when dependencies change */ });
-```
-
-**Database functions** use Cloudflare D1:
-```typescript
-const row = await db
-  .prepare('SELECT * FROM theme_settings WHERE tenant_id = ?')
-  .bind(tenantId)
-  .first<ThemeSettingsRow>();
 ```
 
 ### What's Implemented vs Placeholder
@@ -222,25 +234,15 @@ const row = await db
 | `ThemePreview.svelte` | ✅ Fully implemented |
 | `ColorPanel.svelte` | ✅ Fully implemented |
 | `TypographyPanel.svelte` | ✅ Fully implemented |
-| `LayoutPanel.svelte` | ⏳ Placeholder |
-| `CustomCSSEditor.svelte` | ⏳ Placeholder |
-| `ThemeCustomizer.svelte` | ⏳ Placeholder |
+| `LayoutPanel.svelte` | ✅ Fully implemented |
+| `CustomCSSEditor.svelte` | ✅ Fully implemented |
+| `ThemeCustomizer.svelte` | ✅ Fully implemented |
 | `FontUploader.svelte` | ⏳ Placeholder |
 | `theme-loader.ts` | ✅ Fully implemented |
 | `theme-saver.ts` | ✅ Fully implemented |
 | `contrast.ts` | ✅ Fully implemented (41 tests) |
 | `css-vars.ts` | ✅ Fully implemented (38 tests) |
 | `registry.ts` | ✅ Tier filtering implemented |
-| `grove.ts` | ✅ Uses tokens |
-| `minimal.ts` | ✅ Uses tokens |
-| `night-garden.ts` | ✅ Uses tokens |
-| `moodboard.ts` | ✅ WCAG fixed |
-| `solarpunk.ts` | ✅ WCAG fixed |
-| `ocean.ts` | ✅ WCAG fixed |
-| `wildflower.ts` | ✅ WCAG fixed |
-| `zine.ts` | ✅ Uses tokens |
-| `typewriter.ts` | ✅ Uses tokens |
-| `cozy-cabin.ts` | ✅ Uses tokens |
 
 ### Important Gotchas
 
@@ -248,51 +250,6 @@ const row = await db
 2. **WCAG compliance**: All themes MUST pass `validateThemeContrast()` - 4.5:1 for body text
 3. **D1 types**: Global `D1Database` declared in `theme-loader.ts` - don't redeclare
 4. **CSS variables**: Use `color-mix()` for accent variations (see `css-vars.ts`)
-
-### What's Next (Priority Order)
-
-1. **LayoutPanel component** (`src/lib/components/LayoutPanel.svelte`)
-   - Layout type selection (sidebar, centered, full-width, grid, masonry)
-   - Max width control
-   - Spacing mode (compact, comfortable, spacious)
-
-2. **ThemeCustomizer component** (`src/lib/components/ThemeCustomizer.svelte`)
-   - Sidebar UI combining ColorPanel, TypographyPanel, LayoutPanel
-   - Live preview integration
-   - Save/reset functionality
-
-3. **CustomCSSEditor component** (`src/lib/components/CustomCSSEditor.svelte`)
-   - CSS textarea with syntax highlighting (optional)
-   - Validation (10KB limit, no dangerous properties)
-   - Live preview of custom CSS
-
-4. **FontUploader component** (Phase 5 - Evergreen)
-   - WOFF2 file upload and validation
-   - R2 storage integration
-
-### Recommended Approach
-
-For **LayoutPanel**, follow this pattern:
-```svelte
-<script lang="ts">
-  interface Props {
-    layout: ThemeLayout;
-    onChange?: (layout: Partial<ThemeLayout>) => void;
-  }
-  let { layout, onChange }: Props = $props();
-</script>
-```
-
-For **themes**, always validate after changes:
-```bash
-pnpm test tests/themes.test.ts
-```
-
-### Reference Files
-
-- **Spec**: `docs/specs/theme-system-spec.md` - Full feature requirements
-- **Types**: `src/lib/types.ts` - All TypeScript interfaces
-- **Migrations**: `migrations/*.sql` - Database schema
 
 ---
 
@@ -318,10 +275,6 @@ pnpm test tests/themes.test.ts
 - `setCustomizerEnabled()` - toggles customizer
 - `resetThemeSettings()` - deletes settings to reset to defaults
 
-**Theme Token System Updates:**
-- Minimal theme now uses `bark` tokens for warm text colors
-- Night Garden theme now uses `grove` tokens for accent and foreground
-
 ---
 
 ## Phase 0: Project Scaffolding ✅
@@ -335,7 +288,7 @@ pnpm test tests/themes.test.ts
 
 ---
 
-## Phase 1: Foundation (Current Phase)
+## Phase 1: Foundation ✅
 
 ### Core Setup
 - [x] Run `pnpm install` to install dependencies
@@ -377,7 +330,7 @@ pnpm test tests/themes.test.ts
 
 ---
 
-## Phase 2: Curated Themes
+## Phase 2: Curated Themes ✅
 
 ### Theme Design
 - [x] Finalize Grove theme colors and styling (uses token system)
@@ -409,14 +362,14 @@ pnpm test tests/themes.test.ts
 
 ---
 
-## Phase 4: Theme Customizer (Oak+)
-- [ ] Build customizer sidebar UI (ThemeCustomizer.svelte)
-- [ ] Implement live preview system
+## Phase 4: Theme Customizer (Oak+) ✅
+- [x] Build customizer sidebar UI (ThemeCustomizer.svelte)
+- [x] Implement live preview system (effectiveTheme export)
 - [x] Build ColorPanel component - 6 color inputs with presets and WCAG validation
 - [x] Build TypographyPanel component - font selectors with live preview
-- [ ] Build LayoutPanel component
-- [ ] Implement CustomCSSEditor with validation
-- [ ] Add reset to default functionality
+- [x] Build LayoutPanel component - layout type, max width, spacing mode
+- [x] Implement CustomCSSEditor with validation - 10KB limit, security checks
+- [x] Add reset to default functionality
 
 ---
 
@@ -445,4 +398,4 @@ pnpm test tests/themes.test.ts
 
 ---
 
-*Last updated: 2025-12-19 - Session 3: ColorPanel, TypographyPanel, theme tokens, integration tests. 148 tests passing.*
+*Last updated: 2025-12-19 - Session 4: LayoutPanel, ThemeCustomizer, CustomCSSEditor, CSS validator tests. 167 tests passing.*
