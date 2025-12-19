@@ -3,6 +3,7 @@
 	// Component for browsing and discovering community-shared themes
 
 	import type { CommunityTheme, UserTier } from '../types.js';
+	import ThemeRating from './ThemeRating.svelte';
 
 	interface Props {
 		themes: CommunityTheme[];
@@ -100,13 +101,6 @@
 		return theme.ratingSum / theme.ratingCount;
 	}
 
-	// Render star rating
-	function getStarRating(rating: number): { full: number; half: boolean; empty: number } {
-		const full = Math.floor(rating);
-		const half = rating % 1 >= 0.5;
-		const empty = 5 - full - (half ? 1 : 0);
-		return { full, half, empty };
-	}
 
 	// Shorten creator ID for display
 	function shortenCreatorId(id: string): string {
@@ -268,7 +262,6 @@
 						{@const isSelected = theme.id === selectedThemeId}
 						{@const colors = getThemeColors(theme)}
 						{@const rating = getAverageRating(theme)}
-						{@const stars = getStarRating(rating)}
 
 						<div
 							class="theme-card featured"
@@ -327,37 +320,8 @@
 
 								<div class="theme-stats">
 									<div class="rating">
-										{#each Array(stars.full) as _}
-											<svg class="star filled" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-												<path
-													d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-												></path>
-											</svg>
-										{/each}
-										{#if stars.half}
-											<svg class="star half" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-												<defs>
-													<linearGradient id="half-{theme.id}">
-														<stop offset="50%" stop-color="currentColor" />
-														<stop offset="50%" stop-color="transparent" />
-													</linearGradient>
-												</defs>
-												<path
-													fill="url(#half-{theme.id})"
-													d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-												></path>
-											</svg>
-										{/if}
-										{#each Array(stars.empty) as _}
-											<svg class="star empty" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-												<path
-													d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-												></path>
-											</svg>
-										{/each}
-										<span class="rating-text">
-											{rating.toFixed(1)} ({theme.ratingCount})
-										</span>
+										<ThemeRating rating={rating} readonly={true} />
+										<span class="rating-count">({theme.ratingCount})</span>
 									</div>
 									<div class="downloads">
 										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -416,7 +380,6 @@
 						{@const isSelected = theme.id === selectedThemeId}
 						{@const colors = getThemeColors(theme)}
 						{@const rating = getAverageRating(theme)}
-						{@const stars = getStarRating(rating)}
 
 						<div
 							class="theme-card"
@@ -465,37 +428,8 @@
 
 								<div class="theme-stats">
 									<div class="rating">
-										{#each Array(stars.full) as _}
-											<svg class="star filled" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-												<path
-													d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-												></path>
-											</svg>
-										{/each}
-										{#if stars.half}
-											<svg class="star half" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-												<defs>
-													<linearGradient id="half-{theme.id}">
-														<stop offset="50%" stop-color="currentColor" />
-														<stop offset="50%" stop-color="transparent" />
-													</linearGradient>
-												</defs>
-												<path
-													fill="url(#half-{theme.id})"
-													d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-												></path>
-											</svg>
-										{/if}
-										{#each Array(stars.empty) as _}
-											<svg class="star empty" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-												<path
-													d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-												></path>
-											</svg>
-										{/each}
-										<span class="rating-text">
-											{rating.toFixed(1)} ({theme.ratingCount})
-										</span>
+										<ThemeRating rating={rating} readonly={true} />
+										<span class="rating-count">({theme.ratingCount})</span>
 									</div>
 									<div class="downloads">
 										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -892,20 +826,12 @@
 		gap: 0.25rem;
 	}
 
-	.star {
-		width: 1rem;
-		height: 1rem;
-		color: #f59e0b;
-	}
 
-	.star.empty {
-		color: #d1d5db;
-	}
-
-	.rating-text {
+	.rating-count {
 		margin-left: 0.25rem;
 		color: var(--color-foreground-muted, #666);
 		font-weight: 500;
+		font-size: 0.75rem;
 	}
 
 	.downloads {
