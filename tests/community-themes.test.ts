@@ -30,7 +30,7 @@ interface MockD1Database {
 }
 
 // Helper to create mock database
-function createMockDb(): MockD1Database {
+function createMockDb(): { db: MockD1Database; statement: MockD1Statement } {
 	const mockStatement: MockD1Statement = {
 		bind: vi.fn(),
 		run: vi.fn(),
@@ -45,7 +45,7 @@ function createMockDb(): MockD1Database {
 		prepare: vi.fn(() => mockStatement)
 	};
 
-	return mockDb;
+	return { db: mockDb, statement: mockStatement };
 }
 
 // Sample theme data
@@ -101,16 +101,18 @@ const sampleThemeRow = {
 
 describe('Community Themes Server Functions', () => {
 	let mockDb: MockD1Database;
+	let mockStatement: MockD1Statement;
 
 	beforeEach(() => {
-		mockDb = createMockDb();
+		const mocks = createMockDb();
+		mockDb = mocks.db;
+		mockStatement = mocks.statement;
 		vi.clearAllMocks();
 	});
 
 	describe('createCommunityTheme', () => {
 		it('should generate a UUID for new theme', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await createCommunityTheme(mockDb as unknown as D1Database, sampleThemeInput);
 
@@ -119,8 +121,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should set status to pending by default', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await createCommunityTheme(mockDb as unknown as D1Database, sampleThemeInput);
 
@@ -128,8 +129,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should initialize downloads, ratingSum, and ratingCount to 0', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await createCommunityTheme(mockDb as unknown as D1Database, sampleThemeInput);
 
@@ -139,8 +139,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should store JSON fields correctly', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await createCommunityTheme(mockDb as unknown as D1Database, sampleThemeInput);
 
@@ -151,8 +150,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should set created_at and updated_at timestamps', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const beforeTime = Math.floor(Date.now() / 1000);
 			const result = await createCommunityTheme(mockDb as unknown as D1Database, sampleThemeInput);
@@ -164,8 +162,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle optional fields being undefined', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const minimalInput = {
 				creatorTenantId: 'tenant-123',
@@ -182,8 +179,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should throw error if database insert fails', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: false });
+				mockStatement.run.mockResolvedValue({ success: false });
 
 			await expect(
 				createCommunityTheme(mockDb as unknown as D1Database, sampleThemeInput)
@@ -191,8 +187,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle database errors gracefully', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockRejectedValue(new Error('Database connection failed'));
+				mockStatement.run.mockRejectedValue(new Error('Database connection failed'));
 
 			await expect(
 				createCommunityTheme(mockDb as unknown as D1Database, sampleThemeInput)
@@ -202,8 +197,7 @@ describe('Community Themes Server Functions', () => {
 
 	describe('getCommunityTheme', () => {
 		it('should return null for non-existent theme ID', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.first.mockResolvedValue(null);
+				mockStatement.first.mockResolvedValue(null);
 
 			const result = await getCommunityTheme(mockDb as unknown as D1Database, 'non-existent-id');
 
@@ -211,8 +205,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should map database row to CommunityTheme interface', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.first.mockResolvedValue(sampleThemeRow);
+				mockStatement.first.mockResolvedValue(sampleThemeRow);
 
 			const result = await getCommunityTheme(mockDb as unknown as D1Database, 'theme-uuid-123');
 
@@ -224,8 +217,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should parse JSON fields correctly', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.first.mockResolvedValue(sampleThemeRow);
+				mockStatement.first.mockResolvedValue(sampleThemeRow);
 
 			const result = await getCommunityTheme(mockDb as unknown as D1Database, 'theme-uuid-123');
 
@@ -236,8 +228,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle null JSON fields gracefully', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.first.mockResolvedValue({
+				mockStatement.first.mockResolvedValue({
 				...sampleThemeRow,
 				tags: null,
 				custom_colors: null,
@@ -256,8 +247,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should return null on database errors', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.first.mockRejectedValue(new Error('Database error'));
+				mockStatement.first.mockRejectedValue(new Error('Database error'));
 
 			const result = await getCommunityTheme(mockDb as unknown as D1Database, 'theme-uuid-123');
 
@@ -267,8 +257,7 @@ describe('Community Themes Server Functions', () => {
 
 	describe('updateCommunityTheme', () => {
 		it('should update only the name field', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await updateCommunityTheme(
 				mockDb as unknown as D1Database,
@@ -283,8 +272,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should update multiple fields at once', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await updateCommunityTheme(
 				mockDb as unknown as D1Database,
@@ -304,8 +292,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should always set updated_at timestamp', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			await updateCommunityTheme(
 				mockDb as unknown as D1Database,
@@ -318,8 +305,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle empty update object', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await updateCommunityTheme(
 				mockDb as unknown as D1Database,
@@ -333,8 +319,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should update JSON fields correctly', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const newColors: Partial<ThemeColors> = { accent: '#ff0000' };
 
@@ -350,8 +335,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should return false on database failure', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: false });
+				mockStatement.run.mockResolvedValue({ success: false });
 
 			const result = await updateCommunityTheme(
 				mockDb as unknown as D1Database,
@@ -363,8 +347,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle database errors', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockRejectedValue(new Error('Database error'));
+				mockStatement.run.mockRejectedValue(new Error('Database error'));
 
 			const result = await updateCommunityTheme(
 				mockDb as unknown as D1Database,
@@ -378,8 +361,7 @@ describe('Community Themes Server Functions', () => {
 
 	describe('deleteCommunityTheme', () => {
 		it('should verify creator ownership before deletion', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			await deleteCommunityTheme(
 				mockDb as unknown as D1Database,
@@ -392,8 +374,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should return false for wrong creator', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: false });
+				mockStatement.run.mockResolvedValue({ success: false });
 
 			const result = await deleteCommunityTheme(
 				mockDb as unknown as D1Database,
@@ -405,8 +386,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should return true on successful deletion', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await deleteCommunityTheme(
 				mockDb as unknown as D1Database,
@@ -418,8 +398,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle database errors', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockRejectedValue(new Error('Database error'));
+				mockStatement.run.mockRejectedValue(new Error('Database error'));
 
 			const result = await deleteCommunityTheme(
 				mockDb as unknown as D1Database,
@@ -435,8 +414,7 @@ describe('Community Themes Server Functions', () => {
 		const mockThemes = [sampleThemeRow, { ...sampleThemeRow, id: 'theme-uuid-456' }];
 
 		it('should filter by single status', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: mockThemes });
+				mockStatement.all.mockResolvedValue({ results: mockThemes });
 
 			await listCommunityThemes(mockDb as unknown as D1Database, { status: 'pending' });
 
@@ -445,8 +423,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should filter by status array', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: mockThemes });
+				mockStatement.all.mockResolvedValue({ results: mockThemes });
 
 			await listCommunityThemes(mockDb as unknown as D1Database, {
 				status: ['approved', 'featured']
@@ -457,8 +434,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should filter by creator tenant ID', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: mockThemes });
+				mockStatement.all.mockResolvedValue({ results: mockThemes });
 
 			await listCommunityThemes(mockDb as unknown as D1Database, {
 				creatorTenantId: 'tenant-123'
@@ -469,8 +445,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should apply limit and offset for pagination', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: mockThemes });
+				mockStatement.all.mockResolvedValue({ results: mockThemes });
 
 			await listCommunityThemes(mockDb as unknown as D1Database, {
 				limit: 10,
@@ -483,8 +458,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should order by downloads DESC', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: mockThemes });
+				mockStatement.all.mockResolvedValue({ results: mockThemes });
 
 			await listCommunityThemes(mockDb as unknown as D1Database, {
 				orderBy: 'downloads',
@@ -496,8 +470,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should order by rating (ratingSum/ratingCount)', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: mockThemes });
+				mockStatement.all.mockResolvedValue({ results: mockThemes });
 
 			await listCommunityThemes(mockDb as unknown as D1Database, {
 				orderBy: 'rating',
@@ -510,8 +483,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should order by created_at', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: mockThemes });
+				mockStatement.all.mockResolvedValue({ results: mockThemes });
 
 			await listCommunityThemes(mockDb as unknown as D1Database, {
 				orderBy: 'created_at',
@@ -523,8 +495,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should combine multiple filters', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: mockThemes });
+				mockStatement.all.mockResolvedValue({ results: mockThemes });
 
 			await listCommunityThemes(mockDb as unknown as D1Database, {
 				status: ['approved', 'featured'],
@@ -543,8 +514,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should return empty array if no results', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [] });
+				mockStatement.all.mockResolvedValue({ results: [] });
 
 			const result = await listCommunityThemes(mockDb as unknown as D1Database);
 
@@ -552,8 +522,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle database errors', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockRejectedValue(new Error('Database error'));
+				mockStatement.all.mockRejectedValue(new Error('Database error'));
 
 			const result = await listCommunityThemes(mockDb as unknown as D1Database);
 
@@ -563,8 +532,7 @@ describe('Community Themes Server Functions', () => {
 
 	describe('incrementDownloads', () => {
 		it('should increment downloads by 1', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await incrementDownloads(mockDb as unknown as D1Database, 'theme-uuid-123');
 
@@ -574,8 +542,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should update updated_at timestamp', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			await incrementDownloads(mockDb as unknown as D1Database, 'theme-uuid-123');
 
@@ -584,8 +551,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should return false on database failure', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: false });
+				mockStatement.run.mockResolvedValue({ success: false });
 
 			const result = await incrementDownloads(mockDb as unknown as D1Database, 'theme-uuid-123');
 
@@ -593,8 +559,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle database errors', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockRejectedValue(new Error('Database error'));
+				mockStatement.run.mockRejectedValue(new Error('Database error'));
 
 			const result = await incrementDownloads(mockDb as unknown as D1Database, 'theme-uuid-123');
 
@@ -604,8 +569,7 @@ describe('Community Themes Server Functions', () => {
 
 	describe('addRating', () => {
 		it('should add rating to ratingSum', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await addRating(mockDb as unknown as D1Database, 'theme-uuid-123', 5);
 
@@ -615,8 +579,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should increment ratingCount', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			await addRating(mockDb as unknown as D1Database, 'theme-uuid-123', 5);
 
@@ -625,8 +588,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should accept rating of 1', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await addRating(mockDb as unknown as D1Database, 'theme-uuid-123', 1);
 
@@ -636,8 +598,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should accept rating of 5', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await addRating(mockDb as unknown as D1Database, 'theme-uuid-123', 5);
 
@@ -647,8 +608,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should update updated_at timestamp', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			await addRating(mockDb as unknown as D1Database, 'theme-uuid-123', 3);
 
@@ -657,8 +617,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should return false on database failure', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: false });
+				mockStatement.run.mockResolvedValue({ success: false });
 
 			const result = await addRating(mockDb as unknown as D1Database, 'theme-uuid-123', 4);
 
@@ -666,8 +625,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle database errors', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockRejectedValue(new Error('Database error'));
+				mockStatement.run.mockRejectedValue(new Error('Database error'));
 
 			const result = await addRating(mockDb as unknown as D1Database, 'theme-uuid-123', 5);
 
@@ -677,8 +635,7 @@ describe('Community Themes Server Functions', () => {
 
 	describe('updateThemeStatus', () => {
 		it('should update theme status', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await updateThemeStatus(
 				mockDb as unknown as D1Database,
@@ -692,8 +649,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should set reviewed_at for approved status', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const beforeTime = Math.floor(Date.now() / 1000);
 			await updateThemeStatus(mockDb as unknown as D1Database, 'theme-uuid-123', 'approved');
@@ -707,8 +663,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should set reviewed_at for featured status', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			await updateThemeStatus(mockDb as unknown as D1Database, 'theme-uuid-123', 'featured');
 
@@ -719,8 +674,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should set reviewed_at for rejected status', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			await updateThemeStatus(mockDb as unknown as D1Database, 'theme-uuid-123', 'rejected');
 
@@ -731,8 +685,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should not set reviewed_at for draft status', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			await updateThemeStatus(mockDb as unknown as D1Database, 'theme-uuid-123', 'draft');
 
@@ -743,8 +696,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should return false on database failure', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: false });
+				mockStatement.run.mockResolvedValue({ success: false });
 
 			const result = await updateThemeStatus(
 				mockDb as unknown as D1Database,
@@ -756,8 +708,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle database errors', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockRejectedValue(new Error('Database error'));
+				mockStatement.run.mockRejectedValue(new Error('Database error'));
 
 			const result = await updateThemeStatus(
 				mockDb as unknown as D1Database,
@@ -771,8 +722,7 @@ describe('Community Themes Server Functions', () => {
 
 	describe('getThemesByCreator', () => {
 		it('should return themes by creator tenant ID', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [sampleThemeRow] });
+				mockStatement.all.mockResolvedValue({ results: [sampleThemeRow] });
 
 			const result = await getThemesByCreator(mockDb as unknown as D1Database, 'tenant-123');
 
@@ -781,8 +731,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should order by created_at DESC', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [sampleThemeRow] });
+				mockStatement.all.mockResolvedValue({ results: [sampleThemeRow] });
 
 			await getThemesByCreator(mockDb as unknown as D1Database, 'tenant-123');
 
@@ -791,8 +740,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should filter by creator correctly', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [sampleThemeRow] });
+				mockStatement.all.mockResolvedValue({ results: [sampleThemeRow] });
 
 			await getThemesByCreator(mockDb as unknown as D1Database, 'tenant-123');
 
@@ -806,8 +754,7 @@ describe('Community Themes Server Functions', () => {
 		const featuredTheme = { ...sampleThemeRow, status: 'featured' as const };
 
 		it('should return only approved and featured themes', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [approvedTheme, featuredTheme] });
+				mockStatement.all.mockResolvedValue({ results: [approvedTheme, featuredTheme] });
 
 			const result = await getApprovedThemes(mockDb as unknown as D1Database);
 
@@ -817,8 +764,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should order by downloads DESC', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [approvedTheme] });
+				mockStatement.all.mockResolvedValue({ results: [approvedTheme] });
 
 			await getApprovedThemes(mockDb as unknown as D1Database);
 
@@ -827,8 +773,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should apply limit parameter', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [approvedTheme] });
+				mockStatement.all.mockResolvedValue({ results: [approvedTheme] });
 
 			await getApprovedThemes(mockDb as unknown as D1Database, 10);
 
@@ -837,8 +782,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should apply offset parameter', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [approvedTheme] });
+				mockStatement.all.mockResolvedValue({ results: [approvedTheme] });
 
 			await getApprovedThemes(mockDb as unknown as D1Database, 10, 5);
 
@@ -851,8 +795,7 @@ describe('Community Themes Server Functions', () => {
 		const featuredTheme = { ...sampleThemeRow, status: 'featured' as const, downloads: 100 };
 
 		it('should return only featured status themes', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [featuredTheme] });
+				mockStatement.all.mockResolvedValue({ results: [featuredTheme] });
 
 			await getFeaturedThemes(mockDb as unknown as D1Database);
 
@@ -863,8 +806,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should order by downloads DESC', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [featuredTheme] });
+				mockStatement.all.mockResolvedValue({ results: [featuredTheme] });
 
 			await getFeaturedThemes(mockDb as unknown as D1Database);
 
@@ -873,8 +815,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should apply limit parameter', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [featuredTheme] });
+				mockStatement.all.mockResolvedValue({ results: [featuredTheme] });
 
 			await getFeaturedThemes(mockDb as unknown as D1Database, 5);
 
@@ -883,8 +824,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should return correctly mapped CommunityTheme objects', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [featuredTheme] });
+				mockStatement.all.mockResolvedValue({ results: [featuredTheme] });
 
 			const result = await getFeaturedThemes(mockDb as unknown as D1Database);
 
@@ -896,8 +836,7 @@ describe('Community Themes Server Functions', () => {
 
 	describe('Rating Calculations', () => {
 		it('should calculate average rating from ratingSum and ratingCount', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			const rowWithRatings = {
+				const rowWithRatings = {
 				...sampleThemeRow,
 				rating_sum: 15,
 				rating_count: 3
@@ -913,8 +852,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle zero ratings without division errors', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.first.mockResolvedValue({
+				mockStatement.first.mockResolvedValue({
 				...sampleThemeRow,
 				rating_sum: 0,
 				rating_count: 0
@@ -927,8 +865,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should accumulate ratings correctly with addRating', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			// Simulate adding multiple ratings
 			await addRating(mockDb as unknown as D1Database, 'theme-uuid-123', 5);
@@ -942,8 +879,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle very high rating counts', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.first.mockResolvedValue({
+				mockStatement.first.mockResolvedValue({
 				...sampleThemeRow,
 				rating_sum: 50000,
 				rating_count: 10000
@@ -957,8 +893,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should support partial ratings (non-5-star)', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await addRating(mockDb as unknown as D1Database, 'theme-uuid-123', 3);
 
@@ -970,8 +905,7 @@ describe('Community Themes Server Functions', () => {
 
 	describe('Status Transitions and Validation', () => {
 		it('should support pending status', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await updateThemeStatus(
 				mockDb as unknown as D1Database,
@@ -983,8 +917,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should support in_review status', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await updateThemeStatus(
 				mockDb as unknown as D1Database,
@@ -996,8 +929,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should support approved status', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await updateThemeStatus(
 				mockDb as unknown as D1Database,
@@ -1009,8 +941,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should support featured status', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await updateThemeStatus(
 				mockDb as unknown as D1Database,
@@ -1022,8 +953,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should support changes_requested status', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await updateThemeStatus(
 				mockDb as unknown as D1Database,
@@ -1035,8 +965,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should support rejected status', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await updateThemeStatus(
 				mockDb as unknown as D1Database,
@@ -1048,8 +977,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should support removed status', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await updateThemeStatus(
 				mockDb as unknown as D1Database,
@@ -1061,8 +989,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should support draft status', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await updateThemeStatus(
 				mockDb as unknown as D1Database,
@@ -1074,8 +1001,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should set reviewed_at for changes_requested status', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			await updateThemeStatus(
 				mockDb as unknown as D1Database,
@@ -1089,8 +1015,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should set null reviewed_at for pending status', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			await updateThemeStatus(
 				mockDb as unknown as D1Database,
@@ -1106,8 +1031,7 @@ describe('Community Themes Server Functions', () => {
 
 	describe('Creator Ownership Verification', () => {
 		it('should verify creator ownership in delete operation', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			await deleteCommunityTheme(
 				mockDb as unknown as D1Database,
@@ -1120,8 +1044,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should include both ID and creator in delete query', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			await deleteCommunityTheme(
 				mockDb as unknown as D1Database,
@@ -1134,8 +1057,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should return false when creator does not own the theme', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: false });
+				mockStatement.run.mockResolvedValue({ success: false });
 
 			const result = await deleteCommunityTheme(
 				mockDb as unknown as D1Database,
@@ -1149,8 +1071,7 @@ describe('Community Themes Server Functions', () => {
 
 	describe('List Filters - Complex Combinations', () => {
 		it('should combine status and creator filters', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [sampleThemeRow] });
+				mockStatement.all.mockResolvedValue({ results: [sampleThemeRow] });
 
 			await listCommunityThemes(mockDb as unknown as D1Database, {
 				status: 'approved',
@@ -1165,8 +1086,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle pagination with filters', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [sampleThemeRow] });
+				mockStatement.all.mockResolvedValue({ results: [sampleThemeRow] });
 
 			await listCommunityThemes(mockDb as unknown as D1Database, {
 				status: ['approved', 'featured'],
@@ -1181,8 +1101,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should apply all sorting options', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [] });
+				mockStatement.all.mockResolvedValue({ results: [] });
 
 			await listCommunityThemes(mockDb as unknown as D1Database, {
 				orderBy: 'updated_at',
@@ -1194,8 +1113,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should default to descending order when not specified', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [] });
+				mockStatement.all.mockResolvedValue({ results: [] });
 
 			await listCommunityThemes(mockDb as unknown as D1Database, {
 				orderBy: 'created_at'
@@ -1206,8 +1124,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle offset without limit', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [sampleThemeRow] });
+				mockStatement.all.mockResolvedValue({ results: [sampleThemeRow] });
 
 			await listCommunityThemes(mockDb as unknown as D1Database, {
 				limit: 10
@@ -1220,8 +1137,7 @@ describe('Community Themes Server Functions', () => {
 
 	describe('Error Handling and Edge Cases', () => {
 		it('should handle null in optional theme fields', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.first.mockResolvedValue({
+				mockStatement.first.mockResolvedValue({
 				...sampleThemeRow,
 				description: null,
 				custom_css: null,
@@ -1239,8 +1155,7 @@ describe('Community Themes Server Functions', () => {
 
 		it('should handle very long custom CSS', async () => {
 			const longCSS = '.class { color: red; }'.repeat(500);
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const result = await createCommunityTheme(mockDb as unknown as D1Database, {
 				...sampleThemeInput,
@@ -1251,8 +1166,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle large number of tags', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const manyTags = Array.from({ length: 50 }, (_, i) => `tag-${i}`);
 			const result = await createCommunityTheme(mockDb as unknown as D1Database, {
@@ -1264,8 +1178,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle special characters in theme name', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			const specialName = "Theme's \"Dark\" & Moody";
 			const result = await createCommunityTheme(mockDb as unknown as D1Database, {
@@ -1277,8 +1190,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle empty array results gracefully', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: [] });
+				mockStatement.all.mockResolvedValue({ results: [] });
 
 			const result = await listCommunityThemes(mockDb as unknown as D1Database);
 
@@ -1287,8 +1199,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle undefined results from database', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.all.mockResolvedValue({ results: undefined });
+				mockStatement.all.mockResolvedValue({ results: undefined });
 
 			const result = await listCommunityThemes(mockDb as unknown as D1Database);
 
@@ -1296,8 +1207,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle multiple rating additions without data loss', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			await addRating(mockDb as unknown as D1Database, 'theme-uuid-123', 5);
 			await addRating(mockDb as unknown as D1Database, 'theme-uuid-123', 4);
@@ -1307,8 +1217,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle multiple download increments', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			for (let i = 0; i < 5; i++) {
 				await incrementDownloads(mockDb as unknown as D1Database, 'theme-uuid-123');
@@ -1318,8 +1227,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should handle concurrent operations gracefully', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 			mockStatement.all.mockResolvedValue({ results: [sampleThemeRow] });
 
 			const ops = [
@@ -1339,8 +1247,7 @@ describe('Community Themes Server Functions', () => {
 
 	describe('Integration Scenarios', () => {
 		it('should support a complete theme creation workflow', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 			mockStatement.first.mockResolvedValue(sampleThemeRow);
 
 			// Create theme
@@ -1353,8 +1260,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should support moderation workflow', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 
 			// Set to in_review
 			let result = await updateThemeStatus(
@@ -1382,8 +1288,7 @@ describe('Community Themes Server Functions', () => {
 		});
 
 		it('should support full CRUD operations', async () => {
-			const mockStatement = mockDb.prepare() as unknown as MockD1Statement;
-			mockStatement.run.mockResolvedValue({ success: true });
+				mockStatement.run.mockResolvedValue({ success: true });
 			mockStatement.first.mockResolvedValue(sampleThemeRow);
 			mockStatement.all.mockResolvedValue({ results: [sampleThemeRow] });
 
