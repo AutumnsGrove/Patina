@@ -21,9 +21,9 @@ export const typewriter: Theme = {
 	},
 
 	fonts: {
-		heading: 'Courier New, monospace',
-		body: 'Courier New, monospace',
-		mono: 'Courier New, monospace'
+		heading: 'IBM Plex Mono, Courier New, monospace',
+		body: 'IBM Plex Mono, Courier New, monospace',
+		mono: 'IBM Plex Mono, Courier New, monospace'
 	},
 
 	layout: {

@@ -30,6 +30,11 @@ export const themes: Record<string, Theme> = {
 };
 
 /**
+ * All themes as an array (for iteration)
+ */
+export const themeList: Theme[] = Object.values(themes);
+
+/**
  * Get a theme by ID
  */
 export function getTheme(id: string): Theme | undefined {

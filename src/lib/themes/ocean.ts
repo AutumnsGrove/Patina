@@ -30,9 +30,9 @@ export const ocean: Theme = {
 	},
 
 	fonts: {
-		heading: 'system-ui, sans-serif',
-		body: 'system-ui, sans-serif',
-		mono: 'ui-monospace, monospace'
+		heading: 'EB Garamond, Georgia, serif',
+		body: 'EB Garamond, Georgia, serif',
+		mono: 'IBM Plex Mono, ui-monospace, monospace'
 	},
 
 	layout: {

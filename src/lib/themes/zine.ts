@@ -21,9 +21,9 @@ export const zine: Theme = {
 	},
 
 	fonts: {
-		heading: 'Impact, sans-serif',
-		body: 'Georgia, serif',
-		mono: 'ui-monospace, monospace'
+		heading: 'Bodoni Moda, Impact, serif',
+		body: 'Plus Jakarta Sans, system-ui, sans-serif',
+		mono: 'IBM Plex Mono, ui-monospace, monospace'
 	},
 
 	layout: {

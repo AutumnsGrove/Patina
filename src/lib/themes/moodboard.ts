@@ -30,9 +30,9 @@ export const moodboard: Theme = {
 	},
 
 	fonts: {
-		heading: 'system-ui, sans-serif',
-		body: 'system-ui, sans-serif',
-		mono: 'ui-monospace, monospace'
+		heading: 'Cormorant, Georgia, serif',
+		body: 'Instrument Sans, system-ui, sans-serif',
+		mono: 'IBM Plex Mono, ui-monospace, monospace'
 	},
 
 	layout: {

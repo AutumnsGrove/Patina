@@ -31,9 +31,9 @@ export const minimal: Theme = {
 	},
 
 	fonts: {
-		heading: 'system-ui, sans-serif',
-		body: 'Georgia, serif',
-		mono: 'ui-monospace, monospace'
+		heading: 'Instrument Sans, system-ui, sans-serif',
+		body: 'Merriweather, Georgia, serif',
+		mono: 'IBM Plex Mono, ui-monospace, monospace'
 	},
 
 	layout: {

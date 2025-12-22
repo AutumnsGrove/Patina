@@ -21,9 +21,9 @@ export const cozyCabin: Theme = {
 	},
 
 	fonts: {
-		heading: 'Georgia, serif',
-		body: 'Georgia, serif',
-		mono: 'ui-monospace, monospace'
+		heading: 'Lora, Georgia, serif',
+		body: 'Lora, Georgia, serif',
+		mono: 'IBM Plex Mono, ui-monospace, monospace'
 	},
 
 	layout: {

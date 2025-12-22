@@ -35,9 +35,9 @@ export const nightGarden: Theme = {
 	},
 
 	fonts: {
-		heading: 'system-ui, sans-serif',
-		body: 'system-ui, sans-serif',
-		mono: 'ui-monospace, monospace'
+		heading: 'Manrope, system-ui, sans-serif',
+		body: 'Manrope, system-ui, sans-serif',
+		mono: 'IBM Plex Mono, ui-monospace, monospace'
 	},
 
 	layout: {
