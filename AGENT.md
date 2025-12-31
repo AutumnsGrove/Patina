@@ -6,15 +6,15 @@
 
 ## Project Naming
 
-- **Public name:** Cache
-- **Internal codename:** GroveBackups
+- **Public name:** Patina
+- **Internal codename:** GrovePatina
 
-*Part of the Grove ecosystem. "Squirrels cache acorns for winter."*
+*Part of the Grove ecosystem. "Age as armor. Time as protection."*
 
 ---
 
 ## Project Purpose
-Automated weekly backup system for all 9 Grove D1 databases to R2 storage with SQL dump format, 12-week retention, manual trigger capability, and disaster recovery documentation.
+Automated nightly backup system for all 6 Grove D1 databases to R2 storage with SQL dump format, weekly meta-backups, 12-week retention, manual trigger capability, and disaster recovery documentation.
 
 ## Tech Stack
 - **Language**: TypeScript
@@ -25,14 +25,16 @@ Automated weekly backup system for all 9 Grove D1 databases to R2 storage with S
 - **Deployment**: wrangler CLI
 
 ## Architecture Notes
-- **Scheduled Worker**: Cron-triggered every Sunday at 3:00 AM UTC
-- **9 Source Databases**: All Grove D1 databases (groveauth, scout-db, grove-engine, etc.)
-- **Backup Storage**: R2 bucket with date-prefixed paths (YYYY-MM-DD/database-name.sql)
-- **Metadata DB**: grove-backups-db (D1) tracks job history, backup inventory, alerts
+- **Scheduled Worker**: Cron-triggered nightly at 3:00 AM UTC + weekly meta-backup at 4:00 AM UTC Sundays
+- **6 Source Databases**: All Grove D1 databases (groveauth, scout-db, grove-engine-db, autumnsgrove-posts, autumnsgrove-git-stats, grove-domain-jobs)
+- **Backup Storage**: R2 bucket with organized paths:
+  - Daily: `/daily/YYYY-MM-DD/database-name.sql`
+  - Weekly: `/weekly/YYYY-Www.tar.gz`
+- **Metadata DB**: grove-patina-db (D1) tracks job history, backup inventory, alerts
 - **Export Format**: SQL dumps with full schema + data, human-readable, portable
-- **Retention**: Automatic cleanup of backups older than 12 weeks
+- **Retention**: 7 days of daily backups, 12 weeks of weekly archives
 - **API Endpoints**: Status dashboard, manual trigger, download, restore guides
-- **Alerting**: Discord webhook integration for failures (GroveMonitor integration planned)
+- **Alerting**: Webhook integration for failures (GroveMonitor integration)
 
 ---
 
@@ -190,5 +192,5 @@ For all detailed guides, workflows, and examples, see:
 
 ---
 
-*Last updated: 2025-11-28*
-*Model: Claude Sonnet 4.5*
+*Last updated: 2025-12-31*
+*Model: Claude Opus 4.5*

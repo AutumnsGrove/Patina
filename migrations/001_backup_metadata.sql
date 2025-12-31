@@ -1,5 +1,5 @@
 -- ================================================
--- GroveBackups Metadata Database Schema
+-- Patina Metadata Database Schema
 -- Version: 001
 -- Description: Tracks backup jobs, results, inventory, and alert config
 -- ================================================
@@ -12,6 +12,7 @@ CREATE TABLE backup_jobs (
   completed_at INTEGER,                  -- Unix timestamp
   status TEXT NOT NULL,                  -- 'running', 'completed', 'failed'
   trigger_type TEXT NOT NULL,            -- 'scheduled', 'manual'
+  job_type TEXT NOT NULL DEFAULT 'nightly', -- 'nightly', 'weekly', 'manual'
   total_databases INTEGER NOT NULL,
   successful_count INTEGER DEFAULT 0,
   failed_count INTEGER DEFAULT 0,
@@ -22,6 +23,7 @@ CREATE TABLE backup_jobs (
 
 CREATE INDEX idx_backup_jobs_started ON backup_jobs(started_at DESC);
 CREATE INDEX idx_backup_jobs_status ON backup_jobs(status);
+CREATE INDEX idx_backup_jobs_type ON backup_jobs(job_type);
 
 -- Individual database backup results
 CREATE TABLE backup_results (
@@ -48,8 +50,9 @@ CREATE INDEX idx_backup_results_db ON backup_results(database_name, started_at D
 CREATE TABLE backup_inventory (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   r2_key TEXT UNIQUE NOT NULL,           -- Full R2 path
-  database_name TEXT NOT NULL,
+  database_name TEXT NOT NULL,           -- 'all' for weekly archives
   backup_date TEXT NOT NULL,             -- YYYY-MM-DD
+  backup_type TEXT NOT NULL DEFAULT 'daily', -- 'daily', 'weekly'
   size_bytes INTEGER NOT NULL,
   table_count INTEGER,
   created_at INTEGER NOT NULL,
@@ -59,6 +62,7 @@ CREATE TABLE backup_inventory (
 
 CREATE INDEX idx_inventory_date ON backup_inventory(backup_date DESC);
 CREATE INDEX idx_inventory_db ON backup_inventory(database_name);
+CREATE INDEX idx_inventory_type ON backup_inventory(backup_type);
 CREATE INDEX idx_inventory_expires ON backup_inventory(expires_at) WHERE deleted_at IS NULL;
 
 -- Alert configuration

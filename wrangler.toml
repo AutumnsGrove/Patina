@@ -1,14 +1,19 @@
-name = "grove-backups"
+name = "grove-patina"
 main = "src/index.ts"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Cron trigger: Every Sunday at 3:00 AM UTC
+# ============================================
+# Cron Triggers
+# ============================================
 [triggers]
-crons = ["0 3 * * 0"]
+crons = [
+  "0 3 * * *",   # Nightly backup at 3:00 AM UTC
+  "0 4 * * 0"    # Weekly archive at 4:00 AM UTC Sunday
+]
 
 # ============================================
-# Source D1 Databases (all 9 Grove databases)
+# Source D1 Databases (6 Grove databases)
 # ============================================
 
 [[d1_databases]]
@@ -27,16 +32,6 @@ database_name = "grove-engine-db"
 database_id = "a6394da2-b7a6-48ce-b7fe-b1eb3e730e68"
 
 [[d1_databases]]
-binding = "GROVEMUSIC_DB"
-database_name = "grovemusic-db"
-database_id = "e1e31ed2-3b1f-4dbd-9435-c9105dadcfa2"
-
-[[d1_databases]]
-binding = "LIBRARY_ENHANCER_DB"
-database_name = "library-enhancer-db"
-database_id = "afd1ce4c-618a-430a-bf0f-0a57647a388d"
-
-[[d1_databases]]
 binding = "AUTUMNSGROVE_POSTS_DB"
 database_name = "autumnsgrove-posts"
 database_id = "510badf3-457a-4892-bf2a-45d4bfd7a7bb"
@@ -51,20 +46,15 @@ binding = "GROVE_DOMAIN_JOBS_DB"
 database_name = "grove-domain-jobs"
 database_id = "cd493112-a901-4f6d-aadf-a5ca78929557"
 
-[[d1_databases]]
-binding = "YOUR_SITE_POSTS_DB"
-database_name = "your-site-posts"
-database_id = "86342742-7d34-486f-97f0-928136555e1a"
-
 # ============================================
 # Metadata Database (for backup tracking)
 # ============================================
 
 [[d1_databases]]
 binding = "METADATA_DB"
-database_name = "grove-backups-db"
+database_name = "grove-patina-db"
 database_id = "TODO_CREATE_THIS_DATABASE"
-# Run: wrangler d1 create grove-backups-db
+# Run: wrangler d1 create grove-patina-db
 # Then update this ID with the output
 
 # ============================================
@@ -73,17 +63,18 @@ database_id = "TODO_CREATE_THIS_DATABASE"
 
 [[r2_buckets]]
 binding = "BACKUPS"
-bucket_name = "grove-backups"
-# Run: wrangler r2 bucket create grove-backups
+bucket_name = "grove-patina"
+# Run: wrangler r2 bucket create grove-patina
 
 # ============================================
 # Environment Variables
 # ============================================
 
 [vars]
-RETENTION_WEEKS = "12"
+DAILY_RETENTION_DAYS = "7"
+WEEKLY_RETENTION_WEEKS = "12"
 ALERT_ON_SUCCESS = "false"
 ALERT_ON_FAILURE = "true"
 
-# Set via: wrangler secret put DISCORD_WEBHOOK_URL
-# DISCORD_WEBHOOK_URL = ""
+# Set via: wrangler secret put WEBHOOK_URL
+# WEBHOOK_URL = ""

@@ -1,8 +1,8 @@
 {
-  "name": "grove-backups",
+  "name": "grove-patina",
   "version": "1.0.0",
   "type": "module",
-  "description": "Automated weekly backup system for Grove D1 databases to R2",
+  "description": "Automated nightly backup system for Grove D1 databases to R2",
   "main": "src/index.ts",
   "scripts": {
     "dev": "wrangler dev",
@@ -19,7 +19,9 @@
     "d1",
     "r2",
     "backup",
-    "database"
+    "database",
+    "patina",
+    "grove"
   ],
   "author": "AutumnsGrove",
   "license": "MIT",
