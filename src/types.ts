@@ -9,7 +9,7 @@
 // ============================================
 
 export interface Env {
-  // Source D1 Databases (9 total)
+  // Source D1 Databases (12 total)
   GROVEAUTH_DB: D1Database;
   SCOUT_DB: D1Database;
   GROVE_ENGINE_DB: D1Database;
@@ -19,6 +19,9 @@ export interface Env {
   AUTUMNSGROVE_GIT_STATS_DB: D1Database;
   GROVE_DOMAIN_JOBS_DB: D1Database;
   YOUR_SITE_POSTS_DB: D1Database;
+  AMBER_DB: D1Database;
+  MYCELIUM_OAUTH_DB: D1Database;
+  IVY_DB: D1Database;
 
   // Metadata database
   METADATA_DB: D1Database;
@@ -53,6 +56,9 @@ export interface DatabaseConfig {
     | 'AUTUMNSGROVE_GIT_STATS_DB'
     | 'GROVE_DOMAIN_JOBS_DB'
     | 'YOUR_SITE_POSTS_DB'
+    | 'AMBER_DB'
+    | 'MYCELIUM_OAUTH_DB'
+    | 'IVY_DB'
   >;
   description: string;
   priority: 'critical' | 'high' | 'normal';

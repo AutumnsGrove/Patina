@@ -79,6 +79,30 @@ export const DATABASES: DatabaseConfig[] = [
     priority: 'normal',
     estimatedSize: '12 KB',
   },
+  {
+    name: 'amber',
+    id: 'f688021b-a986-495a-94bb-352354768a22',
+    binding: 'AMBER_DB',
+    description: 'Amber application data',
+    priority: 'normal',
+    estimatedSize: '86 KB',
+  },
+  {
+    name: 'mycelium-oauth',
+    id: 'fc477b40-3691-4a01-85b8-bb4e00b17606',
+    binding: 'MYCELIUM_OAUTH_DB',
+    description: 'Mycelium OAuth system',
+    priority: 'high',
+    estimatedSize: '28 KB',
+  },
+  {
+    name: 'ivy-db',
+    id: '57738720-bc43-4a7f-ad5b-ceb86b3c0542',
+    binding: 'IVY_DB',
+    description: 'Ivy application data',
+    priority: 'normal',
+    estimatedSize: '147 KB',
+  },
 ];
 
 // Backup schedule and retention
