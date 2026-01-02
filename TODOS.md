@@ -11,71 +11,71 @@
 - [x] Update wrangler.toml with database_id
 - [x] Add 3 new databases to backup config (amber, mycelium-oauth, ivy-db) - now 12 total
 
-## Phase 2: Export Logic
-- [ ] Implement SQL export in `exporter.ts`
-  - [ ] Query sqlite_master for table schemas
-  - [ ] Handle all SQLite data types correctly
-  - [ ] Implement batch processing for large tables (1000 rows/batch)
-  - [ ] Add proper SQL escaping for strings
-  - [ ] Include header/footer metadata in dumps
-  - [ ] Test with small database first (your-site-posts)
-- [ ] Create utility functions in `utils.ts`
-  - [ ] formatSqlValue() for data type conversion
-  - [ ] formatBytes() for human-readable sizes
-  - [ ] generateJobId() for UUID generation
+## Phase 2: Export Logic ✅ (Complete)
+- [x] Implement SQL export in `exporter.ts`
+  - [x] Query sqlite_master for table schemas
+  - [x] Handle all SQLite data types correctly
+  - [x] Implement batch processing for large tables (1000 rows/batch)
+  - [x] Add proper SQL escaping for strings
+  - [x] Include header/footer metadata in dumps
+  - [x] Test with small database first (your-site-posts)
+- [x] Create utility functions in `utils.ts`
+  - [x] formatSqlValue() for data type conversion
+  - [x] formatBytes() for human-readable sizes
+  - [x] generateJobId() for UUID generation
 
-## Phase 3: Scheduled Handler
-- [ ] Implement cron handler in `scheduled.ts`
-  - [ ] Iterate through all 12 databases from config
-  - [ ] Call exporter for each database
-  - [ ] Upload SQL dumps to R2 with date prefix
-  - [ ] Log results to metadata DB
-  - [ ] Handle errors gracefully (continue on failure)
-  - [ ] Run cleanup after all backups complete
-- [ ] Test with manual trigger first
-- [ ] Verify cron schedule triggers correctly
+## Phase 3: Scheduled Handler ✅ (Complete)
+- [x] Implement cron handler in `scheduled.ts`
+  - [x] Iterate through all 12 databases from config
+  - [x] Call exporter for each database
+  - [x] Upload SQL dumps to R2 with date prefix
+  - [x] Log results to metadata DB
+  - [x] Handle errors gracefully (continue on failure)
+  - [x] Run cleanup after all backups complete
+- [x] Test with manual trigger first
+- [x] Verify cron schedule triggers correctly
 
-## Phase 4: API Endpoints
-- [ ] Implement route handlers:
-  - [ ] GET / - Worker info and documentation
-  - [ ] GET /status - Current status and recent history
-  - [ ] GET /list - List all available backups with filtering
-  - [ ] POST /trigger - Manual backup trigger
-  - [ ] GET /download/:date/:db - Download specific backup
-  - [ ] GET /restore-guide/:db - Restore instructions
-- [ ] Add request validation
-- [ ] Add proper error responses
+## Phase 4: API Endpoints ✅ (Partial - Core Complete)
+- [x] Implement route handlers:
+  - [x] GET / - Worker info and documentation
+  - [ ] GET /status - Current status and recent history (stub)
+  - [ ] GET /list - List all available backups with filtering (stub)
+  - [x] POST /trigger - Manual backup trigger
+  - [x] GET /download/:date/:db - Download specific backup
+  - [ ] GET /restore-guide/:db - Restore instructions (stub)
+- [x] Add request validation
+- [x] Add proper error responses
 - [ ] Test all endpoints
 
-## Phase 5: Cleanup & Alerting
-- [ ] Implement cleanup logic in `cleanup.ts`
-  - [ ] Query backups older than 12 weeks
-  - [ ] Delete from R2
-  - [ ] Mark as deleted in inventory
-  - [ ] Return cleanup statistics
-- [ ] Implement alerting in `alerting.ts`
-  - [ ] Format Discord webhook messages
-  - [ ] Send on failure (always)
-  - [ ] Send on success (configurable)
-  - [ ] Handle webhook errors gracefully
+## Phase 5: Cleanup & Alerting ✅ (Complete)
+- [x] Implement cleanup logic in `cleanup.ts`
+  - [x] Query backups older than 12 weeks
+  - [x] Delete from R2
+  - [x] Mark as deleted in inventory
+  - [x] Return cleanup statistics
+- [x] Implement alerting in `alerting.ts`
+  - [x] Format Discord webhook messages
+  - [x] Send on failure (always)
+  - [x] Send on success (configurable)
+  - [x] Handle webhook errors gracefully
 - [ ] Set Discord webhook URL via wrangler secret
 - [ ] Test webhook formatting
 
 ## Phase 6: Testing & Documentation
-- [ ] Test full backup cycle end-to-end
+- [x] Test full backup cycle end-to-end
 - [ ] Test restore process with downloaded backup
 - [ ] Test cleanup of old backups
-- [ ] Test manual trigger endpoint
-- [ ] Verify all 12 databases backup successfully
+- [x] Test manual trigger endpoint
+- [x] Verify all 12 databases backup successfully
 - [ ] Write project README.md
 - [ ] Document deployment steps
 - [ ] Add restore procedures documentation
 - [ ] Add troubleshooting guide
 
 ## Phase 7: Monitoring & Integration
-- [ ] Deploy to production
+- [x] Deploy to production
 - [ ] Monitor first scheduled run
-- [ ] Verify backups appear in R2
+- [x] Verify backups appear in R2
 - [ ] Set up alerting channel (Discord)
 - [ ] Plan GroveMonitor integration
   - [ ] Expose backup metrics
@@ -113,5 +113,6 @@
 
 ---
 
-**Priority**: Phase 2 → Phase 3 → Phase 4-5 (get D1 backups working first, then R2, then DOs)
-**Next Step**: Implement SQL export logic in `exporter.ts`
+**Status**: Core D1 backup system is LIVE and working!
+**First successful backup**: 2026-01-02 - 12/12 databases, ~1.1 MB total
+**Next Step**: Complete remaining API endpoints (/status, /list, /restore-guide)

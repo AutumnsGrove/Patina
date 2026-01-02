@@ -33,7 +33,7 @@ app.get('/', (c) => {
     description: 'Automated D1 database backup system for Grove',
     schedule: 'Every Sunday at 3:00 AM UTC',
     retention: '12 weeks',
-    databases: 9,
+    databases: 12,
     endpoints: {
       'GET /': 'This documentation',
       'GET /status': 'Current backup status and recent history',

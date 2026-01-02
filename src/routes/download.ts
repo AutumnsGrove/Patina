@@ -4,19 +4,33 @@
  * Downloads a specific backup file from R2.
  */
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Context } from 'hono';
 import type { Env } from '../types';
 
 export async function downloadHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
-  // TODO: Implement download endpoint
-  // 1. Parse date and database name from URL params
-  // 2. Construct R2 key (YYYY-MM-DD/database-name.sql)
-  // 3. Fetch from R2
-  // 4. Return as downloadable file with proper headers
+  const date = c.req.param('date');
+  const db = c.req.param('db');
 
-  const _date = c.req.param('date');
-  const _db = c.req.param('db');
+  if (!date || !db) {
+    return c.json({ error: 'Missing date or database parameter' }, 400);
+  }
 
-  return new Response('Not implemented', { status: 501 });
+  // Construct R2 key
+  const r2Key = `${date}/${db}.sql`;
+
+  // Fetch from R2
+  const object = await c.env.BACKUPS.get(r2Key);
+
+  if (!object) {
+    return c.json({ error: `Backup not found: ${r2Key}` }, 404);
+  }
+
+  // Return as downloadable SQL file
+  return new Response(object.body, {
+    headers: {
+      'Content-Type': 'application/sql',
+      'Content-Disposition': `attachment; filename="${db}-${date}.sql"`,
+      'Content-Length': object.size.toString(),
+    },
+  });
 }

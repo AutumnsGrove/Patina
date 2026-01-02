@@ -13,7 +13,11 @@ export function formatSqlValue(value: unknown): string {
   if (typeof value === 'number') return value.toString();
   if (typeof value === 'boolean') return value ? '1' : '0';
   if (value instanceof Uint8Array) {
-    return `X'${Buffer.from(value).toString('hex')}'`;
+    // Convert Uint8Array to hex string without Node.js Buffer
+    const hex = Array.from(value)
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+    return `X'${hex}'`;
   }
   // Escape single quotes for strings
   return `'${String(value).replace(/'/g, "''")}'`;

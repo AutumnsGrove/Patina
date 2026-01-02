@@ -4,57 +4,111 @@
  * Sends webhook notifications for backup job completion or failures.
  */
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import type { AlertPayload, DiscordWebhookPayload} from '../types';
+import type { Env, BackupResult, DiscordWebhookPayload } from '../types';
+import { formatBytes } from './utils';
 
-/**
- * Send alert webhook for backup job completion/failure
- *
- * @param webhookUrl - Discord webhook URL
- * @param payload - Alert payload with job details
- */
-export async function sendAlert(_webhookUrl: string, _payload: AlertPayload): Promise<void> {
-  // TODO: Implement webhook sending
-  // 1. Format payload for Discord
-  // 2. Send POST request
-  // 3. Handle errors gracefully
+interface BackupJobResult {
+  jobId: string;
+  triggerType: 'scheduled' | 'manual';
+  startedAt: number;
+  completedAt: number;
+  successfulCount: number;
+  failedCount: number;
+  totalSizeBytes: number;
+  durationMs: number;
+  results: BackupResult[];
 }
 
 /**
- * Format alert payload as Discord webhook message
- *
- * @param payload - Alert payload
- * @returns Discord webhook formatted payload
+ * Send alert webhook for backup job completion/failure
  */
-export function formatDiscordMessage(payload: AlertPayload): DiscordWebhookPayload {
-  const isSuccess = payload.status === 'success';
+export async function sendAlert(
+  env: Env,
+  result: BackupJobResult,
+  alertType: 'success' | 'failure'
+): Promise<void> {
+  const webhookUrl = env.DISCORD_WEBHOOK_URL;
+
+  if (!webhookUrl) {
+    console.log('No Discord webhook URL configured, skipping alert');
+    return;
+  }
+
+  try {
+    const payload = formatDiscordMessage(result, alertType);
+
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      console.error(`Discord webhook failed: ${response.status} ${response.statusText}`);
+    } else {
+      console.log(`Discord alert sent: ${alertType}`);
+    }
+  } catch (error) {
+    console.error('Failed to send Discord alert:', error);
+  }
+}
+
+/**
+ * Format backup result as Discord webhook message
+ */
+function formatDiscordMessage(result: BackupJobResult, alertType: 'success' | 'failure'): DiscordWebhookPayload {
+  const isSuccess = alertType === 'success';
+  const totalDatabases = result.successfulCount + result.failedCount;
+
+  const fields = [
+    {
+      name: 'Databases',
+      value: `${result.successfulCount}/${totalDatabases} successful`,
+      inline: true,
+    },
+    {
+      name: 'Total Size',
+      value: formatBytes(result.totalSizeBytes),
+      inline: true,
+    },
+    {
+      name: 'Duration',
+      value: `${(result.durationMs / 1000).toFixed(1)}s`,
+      inline: true,
+    },
+    {
+      name: 'Trigger',
+      value: result.triggerType,
+      inline: true,
+    },
+  ];
+
+  // Add failure details if there are failures
+  if (result.failedCount > 0) {
+    const failedDbs = result.results
+      .filter((r) => r.status === 'failed')
+      .map((r) => `- ${r.database_name}: ${r.error_message || 'Unknown error'}`)
+      .join('\n');
+
+    fields.push({
+      name: 'Failed Databases',
+      value: failedDbs || 'None',
+      inline: false,
+    });
+  }
 
   return {
     embeds: [
       {
-        title: isSuccess ? '✅ Cache Backup Completed' : '⚠️ Cache Backup Partially Failed',
+        title: isSuccess ? '✅ Cache Backup Completed' : '⚠️ Cache Backup Failed',
         color: isSuccess ? 0x22c55e : 0xef4444,
-        fields: [
-          {
-            name: 'Databases',
-            value: `${payload.summary.successful}/${payload.summary.successful + payload.summary.failed} successful`,
-            inline: true,
-          },
-          {
-            name: 'Total Size',
-            value: payload.summary.totalSize,
-            inline: true,
-          },
-          {
-            name: 'Duration',
-            value: payload.summary.duration,
-            inline: true,
-          },
-        ],
+        fields,
         footer: {
-          text: `Job ID: ${payload.jobId}`,
+          text: `Job ID: ${result.jobId}`,
         },
-        timestamp: payload.timestamp,
+        timestamp: new Date(result.completedAt * 1000).toISOString(),
       },
     ],
   };

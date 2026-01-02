@@ -6,6 +6,8 @@
 
 import type { DatabaseConfig } from '../types';
 
+export type { DatabaseConfig };
+
 export const DATABASES: DatabaseConfig[] = [
   {
     name: 'groveauth',

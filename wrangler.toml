@@ -5,7 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 
 # Cron trigger: Every Sunday at 3:00 AM UTC
 [triggers]
-crons = ["0 3 * * 0"]
+crons = ["0 3 * * SUN"]
 
 # ============================================
 # Source D1 Databases (all 9 Grove databases)
