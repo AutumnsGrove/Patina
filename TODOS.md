@@ -109,7 +109,7 @@
 - [ ] Document which workers use Durable Objects and what data they store
 - [ ] Identify critical DO data that needs backup
 - [ ] Implement export endpoints in each DO class
-- [ ] Add DO backup integration to Cache worker
+- [ ] Add DO backup integration to Patina worker
 - [ ] Design recovery procedures for DO data
 
 ---
@@ -127,7 +127,7 @@
 
 ---
 
-**Status**: Cache is LIVE and fully operational!
+**Status**: Patina is LIVE and fully operational!
 **First successful backup**: 2026-01-02 - 12/12 databases, ~1.1 MB total
 **Schedules**: Daily at 3 AM UTC (priority DBs), Weekly Sunday 4 AM UTC (all DBs)
 **Authentication**: API key required for protected endpoints

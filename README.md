@@ -1,10 +1,10 @@
-# Cache - Automated Database Backup System
+# Patina - Automated Database Backup System
 
 > **Internal codename:** GroveBackups
 
 **LIVE: Automated daily & weekly backups of all Grove D1 databases to R2 storage**
 
-*Squirrels cache acorns for winter — Cache protects your data daily.*
+*Time adds a patina to things of value — Patina preserves your data.*
 
 [![Status](https://img.shields.io/badge/Status-LIVE-brightgreen)](https://grove-backups.m7jv4v7npb.workers.dev/)
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
@@ -37,7 +37,7 @@
 
 ## Overview
 
-Cache is a Cloudflare Worker that automatically backs up Grove D1 databases to R2 storage. Priority databases (auth, core engine) are backed up daily, while all databases receive weekly full backups.
+Patina is a Cloudflare Worker that automatically backs up Grove D1 databases to R2 storage. Priority databases (auth, core engine) are backed up daily, while all databases receive weekly full backups.
 
 **Key Features:**
 - **Daily priority backups** - Critical databases backed up every day at 3 AM UTC
@@ -90,7 +90,7 @@ echo $API_KEY | wrangler secret put API_KEY
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              Cache System                                   │
+│                             Patina System                                   │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────┐

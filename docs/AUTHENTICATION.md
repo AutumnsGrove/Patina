@@ -2,7 +2,7 @@
 
 ## Why Authentication?
 
-Cache stores SQL dumps of **all Grove databases**, including:
+Patina stores SQL dumps of **all Grove databases**, including:
 - User credentials and sessions (`groveauth`)
 - OAuth tokens (`mycelium-oauth`)
 - Personal user data across all applications
@@ -85,10 +85,10 @@ Set it as an environment variable for convenience:
 
 ```bash
 # Add to ~/.bashrc or ~/.zshrc
-export CACHE_API_KEY="j8j+5bnNwHM7sP6curEtCBwxWVGDHWpMB8Z3lArbDxg="
+export PATINA_API_KEY="j8j+5bnNwHM7sP6curEtCBwxWVGDHWpMB8Z3lArbDxg="
 
 # Then use it
-curl -H "Authorization: Bearer $CACHE_API_KEY" \
+curl -H "Authorization: Bearer $PATINA_API_KEY" \
   https://grove-backups.m7jv4v7npb.workers.dev/list
 ```
 
@@ -117,7 +117,7 @@ The change takes effect immediately. The old key will stop working.
 
 ```bash
 # Update ~/.bashrc or ~/.zshrc
-export CACHE_API_KEY="<new-key-here>"
+export PATINA_API_KEY="<new-key-here>"
 ```
 
 ---
@@ -196,6 +196,6 @@ wrangler secret delete API_KEY
 wrangler secret list
 
 # Test auth
-curl -H "Authorization: Bearer $CACHE_API_KEY" \
+curl -H "Authorization: Bearer $PATINA_API_KEY" \
   https://grove-backups.m7jv4v7npb.workers.dev/health
 ```

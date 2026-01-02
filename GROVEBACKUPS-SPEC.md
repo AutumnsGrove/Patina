@@ -1,17 +1,17 @@
-# Cache - Automated Database Backup System
+# Patina - Automated Database Backup System
 
 > **Internal codename:** GroveBackups
 
 ## Project Overview
 
-**Public Name:** Cache
+**Public Name:** Patina
 **Internal Codename:** GroveBackups
 **Location:** `packages/backups/` in GroveEngine monorepo
 **URL:** `backups.grove.place` (optional dashboard)
 **Purpose:** Automated weekly backups of all Grove D1 databases to R2
 **Stack:** Cloudflare Workers + D1 + R2
 
-*Part of the Grove ecosystem. "Squirrels cache acorns for winter."*
+*Part of the Grove ecosystem. "Time adds a patina to things of value."*
 
 ---
 
@@ -31,7 +31,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              Cache System                                   │
+│                             Patina System                                   │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────┐
@@ -469,7 +469,7 @@ Worker info and documentation.
 ```typescript
 // Response
 {
-  "name": "Cache",
+  "name": "Patina",
   "version": "1.0.0",
   "description": "Automated D1 database backup system for Grove",
   "schedule": "Every Sunday at 3:00 AM UTC",
@@ -681,8 +681,8 @@ export function formatDiscordMessage(result: BackupJobResult): object {
   return {
     embeds: [{
       title: isSuccess
-        ? '✅ Cache Backup Completed'
-        : '⚠️ Cache Backup Partially Failed',
+        ? '✅ Patina Backup Completed'
+        : '⚠️ Patina Backup Partially Failed',
       color: isSuccess ? 0x22c55e : 0xef4444,
       fields: [
         { 

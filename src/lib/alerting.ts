@@ -102,7 +102,7 @@ function formatDiscordMessage(result: BackupJobResult, alertType: 'success' | 'f
   return {
     embeds: [
       {
-        title: isSuccess ? '✅ Cache Backup Completed' : '⚠️ Cache Backup Failed',
+        title: isSuccess ? '✅ Patina Backup Completed' : '⚠️ Patina Backup Failed',
         color: isSuccess ? 0x22c55e : 0xef4444,
         fields,
         footer: {

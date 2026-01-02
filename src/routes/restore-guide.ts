@@ -83,7 +83,7 @@ export async function restoreGuideHandler(c: Context<{ Bindings: Env }>): Promis
             `# Step 3: Verify the restore`,
             `wrangler d1 execute ${dbName} --command="SELECT COUNT(*) FROM sqlite_master WHERE type='table'"`,
           ],
-          note: 'Time Travel is faster and built into D1, but only works for the last 30 days. Use Cache backups for older restores.',
+          note: 'Time Travel is faster and built into D1, but only works for the last 30 days. Use Patina backups for older restores.',
         },
       },
     };

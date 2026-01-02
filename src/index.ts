@@ -32,7 +32,7 @@ const app = new Hono<{ Bindings: Env }>();
 // Root endpoint - documentation
 app.get('/', (c) => {
   return c.json({
-    name: 'Cache',
+    name: 'Patina',
     version: '1.0.0',
     description: 'Automated D1 database backup system for Grove',
     schedule: {

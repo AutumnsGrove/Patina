@@ -6,10 +6,10 @@
 
 ## Project Naming
 
-- **Public name:** Cache
+- **Public name:** Patina
 - **Internal codename:** GroveBackups
 
-*Part of the Grove ecosystem. "Squirrels cache acorns for winter."*
+*Part of the Grove ecosystem. "Time adds a patina to things of value."*
 
 ---
 
