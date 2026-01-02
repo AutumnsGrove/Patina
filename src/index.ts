@@ -9,12 +9,16 @@
 import { Hono } from 'hono';
 import type { Env } from './types';
 
+// Middleware
+import { requireApiKey } from './middleware/auth';
+
 // Route handlers
 import { statusHandler } from './routes/status';
 import { listHandler } from './routes/list';
 import { triggerHandler } from './routes/trigger';
 import { downloadHandler } from './routes/download';
 import { restoreGuideHandler } from './routes/restore-guide';
+import { healthHandler } from './routes/health';
 
 // Scheduled handler
 import { handleScheduled } from './scheduled';
@@ -22,7 +26,7 @@ import { handleScheduled } from './scheduled';
 const app = new Hono<{ Bindings: Env }>();
 
 // ============================================
-// Routes
+// Public Routes (no auth required)
 // ============================================
 
 // Root endpoint - documentation
@@ -31,34 +35,51 @@ app.get('/', (c) => {
     name: 'Cache',
     version: '1.0.0',
     description: 'Automated D1 database backup system for Grove',
-    schedule: 'Every Sunday at 3:00 AM UTC',
+    schedule: {
+      daily: 'Priority databases at 3:00 AM UTC',
+      weekly: 'All databases on Sunday at 4:00 AM UTC',
+    },
     retention: '12 weeks',
     databases: 12,
+    dailyBackups: ['groveauth', 'grove-engine-db'],
+    authentication: 'Protected endpoints require: Authorization: Bearer <api-key>',
     endpoints: {
-      'GET /': 'This documentation',
-      'GET /status': 'Current backup status and recent history',
-      'GET /list': 'List all available backups',
-      'POST /trigger': 'Manually trigger a backup',
-      'GET /download/:date/:db': 'Download a specific backup',
-      'GET /restore-guide/:db': 'Get restore instructions for a database',
+      public: {
+        'GET /': 'This documentation',
+        'GET /health': 'Health check for monitoring',
+      },
+      protected: {
+        'GET /status': 'Current backup status and recent history',
+        'GET /list': 'List all available backups (supports ?database=&date=&limit=&offset=)',
+        'POST /trigger': 'Manually trigger a full backup',
+        'GET /download/:date/:db': 'Download a specific backup file',
+        'GET /restore-guide/:db': 'Get restore instructions for a database',
+      },
     },
   });
 });
 
+// Health check (public for monitoring)
+app.get('/health', healthHandler);
+
+// ============================================
+// Protected Routes (require API key)
+// ============================================
+
 // Status endpoint
-app.get('/status', statusHandler);
+app.get('/status', requireApiKey, statusHandler);
 
 // List backups
-app.get('/list', listHandler);
+app.get('/list', requireApiKey, listHandler);
 
 // Manual trigger
-app.post('/trigger', triggerHandler);
+app.post('/trigger', requireApiKey, triggerHandler);
 
 // Download backup
-app.get('/download/:date/:db', downloadHandler);
+app.get('/download/:date/:db', requireApiKey, downloadHandler);
 
 // Restore guide
-app.get('/restore-guide/:db', restoreGuideHandler);
+app.get('/restore-guide/:db', requireApiKey, restoreGuideHandler);
 
 // ============================================
 // Worker Export

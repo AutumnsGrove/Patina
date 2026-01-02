@@ -36,6 +36,7 @@ export interface Env {
 
   // Secrets (set via wrangler secret)
   DISCORD_WEBHOOK_URL?: string;
+  API_KEY?: string;
 }
 
 // ============================================
@@ -239,9 +240,9 @@ export interface ListResponse {
     r2Key: string;
     size: string;
     tables: number | null;
-    rows: number | null;
     createdAt: string;
     expiresAt: string;
+    downloadUrl: string;
   }>;
   total: number;
   filtered: number;
@@ -267,6 +268,8 @@ export interface RestoreGuideResponse {
   availableBackups: Array<{
     date: string;
     size: string;
+    tables: number | null;
+    downloadUrl: string;
   }>;
   restoreInstructions: {
     method1_wrangler: {
@@ -280,6 +283,17 @@ export interface RestoreGuideResponse {
       note: string;
     };
   };
+}
+
+export interface HealthResponse {
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  timestamp: string;
+  checks: {
+    worker: boolean;
+    metadataDb: boolean;
+    r2Bucket: boolean;
+  };
+  version: string;
 }
 
 // ============================================

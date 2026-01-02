@@ -42,12 +42,47 @@ Cache is a Cloudflare Worker that automatically backs up Grove D1 databases to R
 **Key Features:**
 - **Daily priority backups** - Critical databases backed up every day at 3 AM UTC
 - **Weekly full backups** - All 12 databases every Sunday at 4 AM UTC
+- **API key authentication** - Protected endpoints require authorization
 - **12 D1 databases** - groveauth, grove-engine-db, scout-db, and 9 more
 - **SQL dump format** - Portable, human-readable, easy to restore
 - **12-week retention** - Automatic cleanup of old backups
 - **Manual triggers** - On-demand backups via API
-- **Discord alerts** - Notifications on backup failures
-- **Download backups** - Direct SQL file downloads
+- **Health monitoring** - `/health` endpoint for uptime checks
+
+---
+
+## Authentication
+
+Protected endpoints require an API key in the `Authorization` header:
+
+```bash
+curl -H "Authorization: Bearer <API_KEY>" https://grove-backups.m7jv4v7npb.workers.dev/status
+```
+
+### Setting Up API Key
+
+Generate and set a secure API key:
+
+```bash
+# Generate secure key (same method as GroveAuth)
+API_KEY=$(openssl rand -base64 32)
+echo $API_KEY  # Save this!
+
+# Set as Cloudflare secret
+echo $API_KEY | wrangler secret put API_KEY
+```
+
+### Endpoint Access
+
+| Endpoint | Auth Required |
+|----------|---------------|
+| `GET /` | No |
+| `GET /health` | No |
+| `GET /status` | **Yes** |
+| `GET /list` | **Yes** |
+| `POST /trigger` | **Yes** |
+| `GET /download/:date/:db` | **Yes** |
+| `GET /restore-guide/:db` | **Yes** |
 
 ---
 
@@ -65,7 +100,7 @@ Cache is a Cloudflare Worker that automatically backs up Grove D1 databases to R
 │    • Daily @ 3:00 AM UTC  → Priority DBs (groveauth, grove-engine)│
 │    • Sunday @ 4:00 AM UTC → All 12 databases                     │
 │                                                                  │
-│  HTTP Endpoints: /, /trigger, /download, /status, /list         │
+│  HTTP Endpoints: /, /health, /status, /list, /trigger, /download │
 │                                                                  │
 └──────────────────────────┬───────────────────────────────────────┘
                            │
@@ -85,141 +120,134 @@ Cache is a Cloudflare Worker that automatically backs up Grove D1 databases to R
 ⚡ = Daily backup enabled
 ```
 
-**Backup Flow:**
-1. Cron triggers (daily for priority DBs, weekly for all)
-2. Worker determines which databases to back up based on trigger
-3. For each DB: export schema + data to SQL (batch processing)
-4. Upload to R2 with date-prefixed path (`YYYY-MM-DD/database-name.sql`)
-5. Log results to `grove-backups-db` metadata database
-6. Clean up backups older than 12 weeks
-7. Send Discord alert if any failures occur
-
 ---
 
 ## Backed Up Databases
 
-| Database | Schedule | Size | Tables | Rows | Description |
-|----------|----------|------|--------|------|-------------|
-| `groveauth` | **Daily** | 103 KB | 15 | 267 | Auth, users, sessions |
-| `grove-engine-db` | **Daily** | 107 KB | 17 | 239 | Core engine, CDN files |
-| `scout-db` | Weekly | 33 KB | 18 | 26 | GroveScout searches |
-| `library-enhancer-db` | Weekly | 629 KB | 6 | 1184 | Library enhancer data |
-| `autumnsgrove-git-stats` | Weekly | 129 KB | 19 | 66 | Git statistics |
-| `autumnsgrove-posts` | Weekly | 69 KB | 2 | 9 | Blog posts |
-| `amber` | Weekly | 9.7 KB | 4 | 22 | Amber app data |
-| `grove-domain-jobs` | Weekly | 9.5 KB | 2 | 24 | Domain search jobs |
-| `ivy-db` | Weekly | 3.6 KB | 9 | 2 | Ivy app data |
-| `grovemusic-db` | Weekly | 3.6 KB | 5 | 0 | GroveMusic data |
-| `mycelium-oauth` | Weekly | 888 B | 1 | 0 | OAuth system |
-| `your-site-posts` | Weekly | 475 B | 0 | 0 | Site posts |
+| Database | Schedule | Size | Tables | Description |
+|----------|----------|------|--------|-------------|
+| `groveauth` | **Daily** | 103 KB | 15 | Auth, users, sessions |
+| `grove-engine-db` | **Daily** | 107 KB | 17 | Core engine, CDN files |
+| `scout-db` | Weekly | 33 KB | 18 | GroveScout searches |
+| `library-enhancer-db` | Weekly | 629 KB | 6 | Library enhancer data |
+| `autumnsgrove-git-stats` | Weekly | 129 KB | 19 | Git statistics |
+| `autumnsgrove-posts` | Weekly | 69 KB | 2 | Blog posts |
+| `amber` | Weekly | 9.7 KB | 4 | Amber app data |
+| `grove-domain-jobs` | Weekly | 9.5 KB | 2 | Domain search jobs |
+| `ivy-db` | Weekly | 3.6 KB | 9 | Ivy app data |
+| `grovemusic-db` | Weekly | 3.6 KB | 5 | GroveMusic data |
+| `mycelium-oauth` | Weekly | 888 B | 1 | OAuth system |
+| `your-site-posts` | Weekly | 475 B | 0 | Site posts |
 
-**Total:** ~1.1 MB per full backup
-**Retention:** 12 weeks
-
-To enable daily backups for a database, set `dailyBackup: true` in `src/lib/databases.ts`.
+**Total:** ~1.1 MB per full backup | **Retention:** 12 weeks
 
 ---
 
 ## API Endpoints
 
-### `GET /`
+### Public Endpoints
+
+#### `GET /`
 Worker information and documentation.
 
-### `POST /trigger`
-Manually trigger a full backup job (all 12 databases).
+#### `GET /health`
+Health check for monitoring. Returns worker, DB, and R2 status.
 
 ```bash
-curl -X POST https://grove-backups.m7jv4v7npb.workers.dev/trigger
+curl https://grove-backups.m7jv4v7npb.workers.dev/health
 ```
 
-Response:
-```json
-{
-  "jobId": "d91fff2b-1497-425a-9d63-4b0e4bdb03fc",
-  "status": "started",
-  "databases": 12,
-  "message": "Backup job started for 12 database(s). Check /status for progress."
-}
+### Protected Endpoints
+
+All protected endpoints require: `Authorization: Bearer <API_KEY>`
+
+#### `GET /status`
+Current backup status, last backup info, and recent job history.
+
+```bash
+curl -H "Authorization: Bearer $API_KEY" \
+  https://grove-backups.m7jv4v7npb.workers.dev/status
 ```
 
-### `GET /download/:date/:db`
+#### `GET /list`
+List all available backups with optional filtering.
+
+```bash
+# List all backups
+curl -H "Authorization: Bearer $API_KEY" \
+  https://grove-backups.m7jv4v7npb.workers.dev/list
+
+# Filter by database
+curl -H "Authorization: Bearer $API_KEY" \
+  "https://grove-backups.m7jv4v7npb.workers.dev/list?database=groveauth"
+
+# Filter by date
+curl -H "Authorization: Bearer $API_KEY" \
+  "https://grove-backups.m7jv4v7npb.workers.dev/list?date=2026-01-02"
+```
+
+#### `POST /trigger`
+Manually trigger a full backup job.
+
+```bash
+curl -X POST -H "Authorization: Bearer $API_KEY" \
+  https://grove-backups.m7jv4v7npb.workers.dev/trigger
+```
+
+#### `GET /download/:date/:db`
 Download a specific backup file.
 
 ```bash
-curl -O https://grove-backups.m7jv4v7npb.workers.dev/download/2026-01-02/groveauth
+curl -H "Authorization: Bearer $API_KEY" \
+  -o groveauth-backup.sql \
+  https://grove-backups.m7jv4v7npb.workers.dev/download/2026-01-02/groveauth
 ```
 
-Returns SQL file with proper headers for download.
+#### `GET /restore-guide/:db`
+Get restore instructions and available backups for a database.
 
-### `GET /status`
-Current backup status and recent history. *(stub - returns placeholder)*
-
-### `GET /list`
-List all available backups. *(stub - returns placeholder)*
+```bash
+curl -H "Authorization: Bearer $API_KEY" \
+  https://grove-backups.m7jv4v7npb.workers.dev/restore-guide/groveauth
+```
 
 ---
 
 ## Quick Start
 
-### Download a Backup
+### Check System Health
 ```bash
-curl -o groveauth-backup.sql https://grove-backups.m7jv4v7npb.workers.dev/download/2026-01-02/groveauth
+curl https://grove-backups.m7jv4v7npb.workers.dev/health
 ```
 
-### Trigger Manual Backup
+### View Backup Status
 ```bash
-curl -X POST https://grove-backups.m7jv4v7npb.workers.dev/trigger
+curl -H "Authorization: Bearer $API_KEY" \
+  https://grove-backups.m7jv4v7npb.workers.dev/status
+```
+
+### Download a Backup
+```bash
+curl -H "Authorization: Bearer $API_KEY" \
+  -o groveauth-backup.sql \
+  https://grove-backups.m7jv4v7npb.workers.dev/download/2026-01-02/groveauth
 ```
 
 ### Restore from Backup
 ```bash
-# Download backup
-curl -o restore.sql https://grove-backups.m7jv4v7npb.workers.dev/download/2026-01-02/groveauth
+# 1. Download backup
+curl -H "Authorization: Bearer $API_KEY" \
+  -o restore.sql \
+  https://grove-backups.m7jv4v7npb.workers.dev/download/2026-01-02/groveauth
 
-# Restore to D1
+# 2. Review the SQL file (recommended)
+head -50 restore.sql
+
+# 3. Restore to D1 (WARNING: replaces all data!)
 wrangler d1 execute groveauth --file=restore.sql
 
-# Verify
+# 4. Verify
 wrangler d1 execute groveauth --command="SELECT COUNT(*) FROM users"
-```
-
----
-
-## SQL Dump Format
-
-Backups are human-readable SQL files:
-
-```sql
--- ================================================
--- Grove Backup: groveauth
--- Generated: 2026-01-02T14:00:10.660Z
--- Job ID: d91fff2b-1497-425a-9d63-4b0e4bdb03fc
--- Tables: 15
--- ================================================
-
-PRAGMA foreign_keys=OFF;
-BEGIN TRANSACTION;
-
--- Table: users
--- Rows: 150
-DROP TABLE IF EXISTS "users";
-CREATE TABLE users (
-  id TEXT PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  ...
-);
-
-INSERT INTO "users" ("id", "email", ...) VALUES ('usr_123', 'user@example.com', ...);
-...
-
-COMMIT;
-PRAGMA foreign_keys=ON;
-
--- ================================================
--- Backup Complete
--- Duration: 1.373s
--- Total Rows: 267
--- ================================================
 ```
 
 ---
@@ -237,24 +265,24 @@ ALERT_ON_SUCCESS = "false"
 ALERT_ON_FAILURE = "true"
 ```
 
+### Secrets
+```bash
+# API key for endpoint authentication (required)
+wrangler secret put API_KEY
+
+# Discord webhook for failure alerts (optional)
+wrangler secret put DISCORD_WEBHOOK_URL
+```
+
 ### Adding Daily Backups
-Edit `src/lib/databases.ts` and add `dailyBackup: true` to any database:
+Edit `src/lib/databases.ts` and add `dailyBackup: true`:
 
 ```typescript
 {
   name: 'groveauth',
-  id: '45eae4c7-...',
   binding: 'GROVEAUTH_DB',
-  description: 'Authentication, users, sessions, OAuth',
-  priority: 'critical',
-  estimatedSize: '212 KB',
   dailyBackup: true,  // ← Enable daily backups
 },
-```
-
-### Discord Alerts (Optional)
-```bash
-wrangler secret put DISCORD_WEBHOOK_URL
 ```
 
 ---
@@ -283,9 +311,9 @@ wrangler tail grove-backups
 - [x] **Phase 2:** SQL exporter (batch processing, escaping, metadata)
 - [x] **Phase 3:** Scheduled handler (full backup workflow)
 - [x] **Phase 4:** Core API endpoints (/, /trigger, /download)
-- [x] **Phase 5:** Cleanup & alerting (12-week retention, Discord)
+- [x] **Phase 5:** Cleanup & alerting (12-week retention)
 - [x] **Phase 6:** Daily priority backups (groveauth, grove-engine-db)
-- [ ] **Future:** Complete /status and /list endpoints
+- [x] **Phase 7:** Full API (/status, /list, /restore-guide, /health) + Auth
 - [ ] **Future:** R2 bucket backups
 - [ ] **Future:** Durable Objects backups
 
@@ -297,6 +325,7 @@ wrangler tail grove-backups
 - **Framework:** Hono
 - **Language:** TypeScript
 - **Storage:** R2 (backups), D1 (metadata)
+- **Auth:** API key (Bearer token)
 - **Package Manager:** pnpm
 
 ---
