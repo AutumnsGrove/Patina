@@ -243,12 +243,17 @@ curl -H "Authorization: Bearer $API_KEY" \
 # 2. Review the SQL file (recommended)
 head -50 restore.sql
 
-# 3. Restore to D1 (WARNING: replaces all data!)
-wrangler d1 execute groveauth --file=restore.sql
+# 3. Strip transaction statements (D1 handles transactions automatically)
+grep -v "^BEGIN TRANSACTION;" restore.sql | grep -v "^COMMIT;" > restore-clean.sql
 
-# 4. Verify
-wrangler d1 execute groveauth --command="SELECT COUNT(*) FROM users"
+# 4. Restore to D1 (WARNING: replaces all data!)
+wrangler d1 execute groveauth --remote --file=restore-clean.sql
+
+# 5. Verify
+wrangler d1 execute groveauth --remote --command="SELECT COUNT(*) FROM users"
 ```
+
+> **Note:** D1 doesn't accept explicit `BEGIN TRANSACTION`/`COMMIT` statements in SQL files - it handles transactions automatically. Step 3 strips these statements for compatibility.
 
 ---
 
@@ -337,5 +342,5 @@ MIT License - See [LICENSE](LICENSE) for details
 ---
 
 **Last Updated:** 2026-01-02
-**Status:** LIVE
+**Status:** LIVE (Restore verified)
 **Maintained by:** AutumnsGrove
