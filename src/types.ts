@@ -63,6 +63,8 @@ export interface DatabaseConfig {
   description: string;
   priority: 'critical' | 'high' | 'normal';
   estimatedSize: string;
+  /** If true, this database is backed up daily (in addition to weekly) */
+  dailyBackup?: boolean;
 }
 
 // ============================================

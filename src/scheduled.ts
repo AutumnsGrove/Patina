@@ -5,8 +5,8 @@
  * Backs up all 12 Grove D1 databases to R2
  */
 
-import type { Env, BackupResult } from './types';
-import { DATABASES, type DatabaseConfig } from './lib/databases';
+import type { Env, BackupResult, DatabaseConfig } from './types';
+import { DATABASES, DAILY_DATABASES, CRON_DAILY } from './lib/databases';
 import { generateJobId, getUnixTimestamp, formatDate, calculateExpirationTimestamp } from './lib/utils';
 import { exportDatabase } from './lib/exporter';
 import { cleanupOldBackups } from './lib/cleanup';
@@ -25,20 +25,37 @@ interface BackupJobResult {
 }
 
 /**
+ * Determine which databases to back up based on cron pattern
+ */
+function getDatabasesToBackup(cronPattern: string | undefined): DatabaseConfig[] {
+  if (cronPattern === CRON_DAILY) {
+    // Daily cron: only priority databases
+    return DAILY_DATABASES;
+  }
+  // Weekly cron or manual trigger: all databases
+  return DATABASES;
+}
+
+/**
  * Main scheduled handler
  * Triggered by cron or manual /trigger endpoint
  */
 export async function handleScheduled(
-  _event: ScheduledEvent,
+  event: ScheduledEvent | null,
   env: Env,
   triggerType: 'scheduled' | 'manual' = 'scheduled'
 ): Promise<void> {
+  const cronPattern = event?.cron;
+  const databasesToBackup = getDatabasesToBackup(cronPattern);
+  const isDaily = cronPattern === CRON_DAILY;
+
   const jobId = generateJobId();
   const startTime = Date.now();
   const startedAt = getUnixTimestamp();
   const backupDate = formatDate(new Date());
 
-  console.log(`[${jobId}] Starting backup job (${triggerType}) for ${DATABASES.length} databases`);
+  const backupType = isDaily ? 'daily priority' : 'weekly full';
+  console.log(`[${jobId}] Starting ${backupType} backup (${triggerType}) for ${databasesToBackup.length} databases`);
 
   const results: BackupResult[] = [];
   let successfulCount = 0;
@@ -47,10 +64,10 @@ export async function handleScheduled(
 
   try {
     // Create job record
-    await createJobRecord(env, jobId, triggerType, startedAt);
+    await createJobRecord(env, jobId, triggerType, startedAt, databasesToBackup.length);
 
     // Backup each database
-    for (const dbConfig of DATABASES) {
+    for (const dbConfig of databasesToBackup) {
       const result = await backupDatabase(env, jobId, dbConfig, backupDate);
       results.push(result);
 
@@ -74,7 +91,7 @@ export async function handleScheduled(
     await completeJobRecord(env, jobId, completedAt, successfulCount, failedCount, totalSizeBytes, durationMs);
 
     console.log(
-      `[${jobId}] Backup job completed: ${successfulCount}/${DATABASES.length} successful in ${durationMs}ms`
+      `[${jobId}] Backup job completed: ${successfulCount}/${databasesToBackup.length} successful in ${durationMs}ms`
     );
 
     // Send alert
@@ -204,7 +221,8 @@ async function createJobRecord(
   env: Env,
   jobId: string,
   triggerType: 'scheduled' | 'manual',
-  startedAt: number
+  startedAt: number,
+  totalDatabases: number
 ): Promise<void> {
   await env.METADATA_DB.prepare(
     `
@@ -212,7 +230,7 @@ async function createJobRecord(
     VALUES (?, ?, 'running', ?, ?)
   `
   )
-    .bind(jobId, startedAt, triggerType, DATABASES.length)
+    .bind(jobId, startedAt, triggerType, totalDatabases)
     .run();
 }
 

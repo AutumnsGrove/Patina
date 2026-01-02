@@ -16,6 +16,7 @@ export const DATABASES: DatabaseConfig[] = [
     description: 'Authentication, users, sessions, OAuth',
     priority: 'critical',
     estimatedSize: '212 KB',
+    dailyBackup: true,
   },
   {
     name: 'scout-db',
@@ -32,6 +33,7 @@ export const DATABASES: DatabaseConfig[] = [
     description: 'Core engine, CDN files, signups',
     priority: 'high',
     estimatedSize: '180 KB',
+    dailyBackup: true,
   },
   {
     name: 'grovemusic-db',
@@ -106,6 +108,13 @@ export const DATABASES: DatabaseConfig[] = [
     estimatedSize: '147 KB',
   },
 ];
+
+// Helper to get databases for daily backup
+export const DAILY_DATABASES = DATABASES.filter((db) => db.dailyBackup === true);
+
+// Cron patterns
+export const CRON_DAILY = '0 3 * * *';
+export const CRON_WEEKLY = '0 4 * * SUN';
 
 // Backup schedule and retention
 export const BACKUP_CONFIG = {

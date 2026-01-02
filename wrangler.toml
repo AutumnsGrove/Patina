@@ -3,9 +3,11 @@ main = "src/index.ts"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Cron trigger: Every Sunday at 3:00 AM UTC
+# Cron triggers:
+# - Daily at 3:00 AM UTC: Priority databases (groveauth, grove-engine-db)
+# - Weekly on Sunday at 4:00 AM UTC: All databases
 [triggers]
-crons = ["0 3 * * SUN"]
+crons = ["0 3 * * *", "0 4 * * SUN"]
 
 # ============================================
 # Source D1 Databases (all 9 Grove databases)
