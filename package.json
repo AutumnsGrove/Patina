@@ -11,7 +11,11 @@
     "test": "vitest",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.ts\"",
-    "lint": "eslint src --ext .ts"
+    "lint": "eslint src --ext .ts",
+    "status": "./scripts/status.sh",
+    "status:week": "./scripts/status.sh --days 7",
+    "status:month": "./scripts/status.sh --days 30",
+    "status:json": "./scripts/status.sh --json"
   },
   "keywords": [
     "cloudflare",
