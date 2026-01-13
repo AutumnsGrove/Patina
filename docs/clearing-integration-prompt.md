@@ -16,23 +16,109 @@ The backup system has been running since January 2, 2026 with a 90%+ reliability
 
 ---
 
+## CRITICAL: Grove UI Design Patterns
+
+**Before implementing, read:** `/docs/design/grove-ui-patterns.md`
+
+### Key Rules
+
+1. **NEVER use emojis. ALWAYS use Lucide icons.**
+   ```svelte
+   // Good
+   import { Database, CheckCircle, AlertTriangle, Calendar, HardDrive } from 'lucide-svelte';
+   <Database class="w-4 h-4" />
+
+   // Bad - NEVER do this
+   // ❌ 🗄️ ✅ ⚠️ 📅
+   ```
+
+2. **Glass effects for readability** — Use the `glass-card` pattern for content cards
+3. **Organic, welcoming feel** — Not corporate or rigid. Like a cozy status update.
+4. **Dark mode required** — All components must support `.dark` class
+5. **Lucide icon mapping:**
+   | Concept | Icon |
+   |---------|------|
+   | Backups/Database | `Database` |
+   | Success/Healthy | `CheckCircle` |
+   | Warning/Partial | `AlertTriangle` |
+   | Storage | `HardDrive` |
+   | Date/Calendar | `Calendar` |
+   | Shield/Protected | `Shield` |
+
+### Glass Variants Reference
+
+Clearing uses CSS-based glass cards (not the `<Glass>` component). Follow this pattern:
+```css
+.glass-card {
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 0.75rem;
+}
+.dark .glass-card {
+  background-color: rgba(30, 41, 59, 0.7);
+  border-color: rgba(51, 65, 85, 0.5);
+}
+```
+
+### Status Colors (Match Clearing)
+
+| Status | Light Mode | Dark Mode |
+|--------|------------|-----------|
+| Operational/Healthy | `text-green-600` | `text-green-400` |
+| Degraded/Warning | `text-yellow-600` | `text-yellow-400` |
+| Partial | `text-orange-600` | `text-orange-400` |
+| Outage/Error | `text-red-600` | `text-red-400` |
+| Maintenance/Info | `text-blue-600` | `text-blue-400` |
+
+---
+
 ## Task
 
-Add a **"Data Backups"** section to the Clearing status page that displays:
-1. Overall backup health status
+Add a **"Data Protection"** section to the Clearing status page that displays:
+1. Overall backup health status with Lucide icon
 2. Recent backup history (last 7 days)
-3. Reliability score with visual indicator
+3. Reliability score with visual progress bar
 4. Total backups and storage stats
 
 This section should appear **after the System Status grid** and **before the 90-Day Uptime History**.
+
+### Visual Wireframe (ASCII, no emojis)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  [Database icon]  Data Protection                               │
+│  Automated backups keep your data safe         [CheckCircle] OK │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐           │
+│  │    54    │ │    12    │ │  5.7 MB  │ │    12    │           │
+│  │ Backups  │ │   Days   │ │ Storage  │ │ Databases│           │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘           │
+│                                                                 │
+│  Reliability                                              90%   │
+│  [████████████████████████████████████████░░░░░░░░]            │
+│  [CheckCircle] 9 perfect  [AlertTriangle] 1 partial            │
+│                                                                 │
+│  Recent Backups                                                 │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │ [Calendar] Today          Daily       2 files   311 KB  │   │
+│  │ [Calendar] Yesterday      Daily       2 files   310 KB  │   │
+│  │ [Calendar] Jan 11     Weekly Full    12 files   1.2 MB  │   │
+│  │ [Calendar] Jan 10         Daily       2 files   294 KB  │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│  Daily 3 AM UTC (priority) · Weekly Sunday 4 AM · 12-week hold │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## Data Source
 
-### Option A: Cross-Database Query (Recommended)
+### Database Binding
 
-Clearing already connects to `grove-engine-db`. Add a second D1 binding for `grove-backups-db`:
+Clearing connects to `grove-engine-db`. Add a second D1 binding for `grove-backups-db`:
 
 **In `clearing/wrangler.toml`, add:**
 ```toml
@@ -106,8 +192,7 @@ LIMIT 7
 SELECT
   status,
   successful_count,
-  failed_count,
-  datetime(started_at, 'unixepoch') as started
+  failed_count
 FROM backup_jobs
 ORDER BY started_at DESC
 LIMIT 10
@@ -258,7 +343,7 @@ export async function getBackupStatus(db: D1Database): Promise<BackupStatus> {
   };
 }
 
-// Mock data for development
+// Mock data for development (when BACKUPS_DB not available)
 export function getMockBackupStatus(): BackupStatus {
   const today = new Date();
   const dailyHistory: DailyBackup[] = [];
@@ -329,17 +414,35 @@ Create `clearing/src/lib/components/GlassBackupStatus.svelte`:
 
 ```svelte
 <script lang="ts">
-  import { Database, CheckCircle, AlertTriangle, Calendar, HardDrive } from 'lucide-svelte';
+  /**
+   * GlassBackupStatus - Data protection status display
+   *
+   * Follows Grove UI patterns:
+   * - Lucide icons only (no emojis)
+   * - Glass card styling
+   * - Dark mode support
+   * - Organic, welcoming feel
+   */
+  import {
+    Database,
+    CheckCircle,
+    AlertTriangle,
+    Calendar,
+    HardDrive,
+    Shield
+  } from 'lucide-svelte';
   import type { BackupStatus } from '$lib/server/backups';
 
   let { backupStatus }: { backupStatus: BackupStatus } = $props();
 
+  // Format bytes to human-readable
   function formatBytes(bytes: number): string {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / 1048576).toFixed(2)} MB`;
+    return `${(bytes / 1048576).toFixed(1)} MB`;
   }
 
+  // Format date with friendly labels
   function formatDate(dateStr: string): string {
     const date = new Date(dateStr + 'T00:00:00');
     const today = new Date();
@@ -354,97 +457,123 @@ Create `clearing/src/lib/components/GlassBackupStatus.svelte`:
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 
+  // Status configuration based on health
   const statusConfig = $derived(backupStatus.isHealthy ? {
     icon: CheckCircle,
-    label: 'Backups Healthy',
+    label: 'Protected',
     color: 'text-green-600 dark:text-green-400',
-    bg: 'bg-green-100 dark:bg-green-900/30',
-    border: 'border-green-200 dark:border-green-800'
+    bgColor: 'bg-green-50 dark:bg-green-900/20',
+    borderColor: 'border-green-200 dark:border-green-800'
   } : {
     icon: AlertTriangle,
-    label: 'Backup Issue',
+    label: 'Attention Needed',
     color: 'text-yellow-600 dark:text-yellow-400',
-    bg: 'bg-yellow-100 dark:bg-yellow-900/30',
-    border: 'border-yellow-200 dark:border-yellow-800'
+    bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
+    borderColor: 'border-yellow-200 dark:border-yellow-800'
   });
 
+  // Reliability bar color
   const reliabilityColor = $derived(
-    backupStatus.reliability.score >= 90 ? 'bg-green-500' :
-    backupStatus.reliability.score >= 70 ? 'bg-yellow-500' : 'bg-red-500'
+    backupStatus.reliability.score >= 90 ? 'bg-green-500 dark:bg-green-400' :
+    backupStatus.reliability.score >= 70 ? 'bg-yellow-500 dark:bg-yellow-400' :
+    'bg-red-500 dark:bg-red-400'
   );
 </script>
 
 <section class="glass-card p-6">
+  <!-- Header -->
   <div class="flex items-center justify-between mb-6">
     <div class="flex items-center gap-3">
-      <div class="p-2 rounded-lg {statusConfig.bg}">
-        <Database class="w-5 h-5 {statusConfig.color}" />
+      <div class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20">
+        <Shield class="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
       </div>
       <div>
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Data Backups</h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400">Automated database protection</p>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          Data Protection
+        </h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Automated backups keep your data safe
+        </p>
       </div>
     </div>
-    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full {statusConfig.bg} {statusConfig.border} border">
+
+    <!-- Status badge -->
+    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border {statusConfig.bgColor} {statusConfig.borderColor}">
       <svelte:component this={statusConfig.icon} class="w-4 h-4 {statusConfig.color}" />
       <span class="text-sm font-medium {statusConfig.color}">{statusConfig.label}</span>
     </div>
   </div>
 
   <!-- Stats Grid -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-    <div class="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-      <div class="text-2xl font-bold text-gray-900 dark:text-white">{backupStatus.summary.totalBackups}</div>
-      <div class="text-xs text-gray-500 dark:text-gray-400">Total Backups</div>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+    <div class="text-center p-4 rounded-xl bg-gray-50/80 dark:bg-gray-800/40">
+      <div class="text-2xl font-bold text-gray-900 dark:text-white">
+        {backupStatus.summary.totalBackups}
+      </div>
+      <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Backups</div>
     </div>
-    <div class="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-      <div class="text-2xl font-bold text-gray-900 dark:text-white">{backupStatus.summary.uniqueDays}</div>
-      <div class="text-xs text-gray-500 dark:text-gray-400">Days Covered</div>
+    <div class="text-center p-4 rounded-xl bg-gray-50/80 dark:bg-gray-800/40">
+      <div class="text-2xl font-bold text-gray-900 dark:text-white">
+        {backupStatus.summary.uniqueDays}
+      </div>
+      <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Days Covered</div>
     </div>
-    <div class="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-      <div class="text-2xl font-bold text-gray-900 dark:text-white">{formatBytes(backupStatus.summary.totalBytes)}</div>
-      <div class="text-xs text-gray-500 dark:text-gray-400">Storage Used</div>
+    <div class="text-center p-4 rounded-xl bg-gray-50/80 dark:bg-gray-800/40">
+      <div class="text-2xl font-bold text-gray-900 dark:text-white">
+        {formatBytes(backupStatus.summary.totalBytes)}
+      </div>
+      <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Storage Used</div>
     </div>
-    <div class="text-center p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+    <div class="text-center p-4 rounded-xl bg-gray-50/80 dark:bg-gray-800/40">
       <div class="text-2xl font-bold text-gray-900 dark:text-white">12</div>
-      <div class="text-xs text-gray-500 dark:text-gray-400">Databases</div>
+      <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Databases</div>
     </div>
   </div>
 
   <!-- Reliability Score -->
   <div class="mb-6">
     <div class="flex items-center justify-between mb-2">
-      <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Reliability Score</span>
-      <span class="text-sm font-bold text-gray-900 dark:text-white">{backupStatus.reliability.score.toFixed(0)}%</span>
+      <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+        Reliability
+      </span>
+      <span class="text-sm font-bold text-gray-900 dark:text-white">
+        {backupStatus.reliability.score.toFixed(0)}%
+      </span>
     </div>
     <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
       <div
-        class="h-full {reliabilityColor} transition-all duration-500"
+        class="h-full {reliabilityColor} transition-all duration-700 ease-out"
         style="width: {backupStatus.reliability.score}%"
       ></div>
     </div>
-    <div class="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
-      <span class="flex items-center gap-1">
-        <CheckCircle class="w-3 h-3 text-green-500" />
+    <div class="flex items-center gap-4 mt-2.5 text-xs text-gray-500 dark:text-gray-400">
+      <span class="flex items-center gap-1.5">
+        <CheckCircle class="w-3.5 h-3.5 text-green-500 dark:text-green-400" />
         {backupStatus.reliability.perfectJobs} perfect
       </span>
-      <span class="flex items-center gap-1">
-        <AlertTriangle class="w-3 h-3 text-yellow-500" />
+      <span class="flex items-center gap-1.5">
+        <AlertTriangle class="w-3.5 h-3.5 text-yellow-500 dark:text-yellow-400" />
         {backupStatus.reliability.partialJobs} partial
       </span>
-      <span class="text-gray-400">Last {backupStatus.reliability.totalJobs} jobs</span>
+      <span class="ml-auto text-gray-400 dark:text-gray-500">
+        Last {backupStatus.reliability.totalJobs} jobs
+      </span>
     </div>
   </div>
 
   <!-- Recent Backups -->
   <div>
-    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Recent Backups</h3>
+    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+      Recent Backups
+    </h3>
     <div class="space-y-2">
       {#each backupStatus.dailyHistory.slice(0, 5) as day}
-        <div class="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+        <div class="flex items-center justify-between py-2.5 px-3 rounded-lg bg-gray-50/80 dark:bg-gray-800/40 hover:bg-gray-100/80 dark:hover:bg-gray-800/60 transition-colors">
           <div class="flex items-center gap-3">
-            <Calendar class="w-4 h-4 text-gray-400" />
-            <span class="text-sm font-medium text-gray-900 dark:text-white">{formatDate(day.date)}</span>
+            <Calendar class="w-4 h-4 text-gray-400 dark:text-gray-500" />
+            <span class="text-sm font-medium text-gray-900 dark:text-white min-w-[80px]">
+              {formatDate(day.date)}
+            </span>
             {#if day.type === 'weekly'}
               <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
                 Weekly Full
@@ -456,10 +585,10 @@ Create `clearing/src/lib/components/GlassBackupStatus.svelte`:
             {/if}
           </div>
           <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-            <span>{day.count} files</span>
-            <span class="flex items-center gap-1">
-              <HardDrive class="w-3 h-3" />
-              {formatBytes(day.size)}
+            <span class="tabular-nums">{day.count} files</span>
+            <span class="flex items-center gap-1.5 min-w-[70px] justify-end">
+              <HardDrive class="w-3.5 h-3.5" />
+              <span class="tabular-nums">{formatBytes(day.size)}</span>
             </span>
           </div>
         </div>
@@ -467,10 +596,10 @@ Create `clearing/src/lib/components/GlassBackupStatus.svelte`:
     </div>
   </div>
 
-  <!-- Footer -->
-  <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+  <!-- Footer info -->
+  <div class="mt-5 pt-4 border-t border-gray-200/60 dark:border-gray-700/60">
     <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
-      Daily backups at 3 AM UTC (priority) • Weekly full backups Sunday 4 AM UTC • 12-week retention
+      Daily 3 AM UTC (priority databases) · Weekly Sunday 4 AM UTC (full) · 12-week retention
     </p>
   </div>
 </section>
@@ -488,15 +617,15 @@ In `clearing/src/routes/+page.svelte`, import and add the component:
   // ... existing code
 </script>
 
-<!-- Add after System Status grid, before Uptime History -->
+<!-- Add after System Status grid, before Uptime History section -->
 {#if data.backupStatus}
   <GlassBackupStatus backupStatus={data.backupStatus} />
 {/if}
 ```
 
-### 6. Add Types Export
+### 6. Export Types (if needed)
 
-Update `clearing/src/lib/server/index.ts` (or create if doesn't exist):
+If Clearing has a barrel export in `clearing/src/lib/server/index.ts`:
 
 ```typescript
 export * from './backups';
@@ -504,40 +633,32 @@ export * from './backups';
 
 ---
 
-## Design Guidelines
+## Design Compliance Checklist
 
-### Match Existing Patterns
+Before shipping, verify:
 
-- Use `glass-card` class for container
-- Use Lucide icons (already installed)
-- Follow the green/yellow/red status color scheme
-- Use `bg-gray-50 dark:bg-gray-800/50` for inner cards
-- Keep spacing consistent with existing components (p-6, gap-4, mb-6)
-
-### Responsive Design
-
-- Stats grid: 2 columns on mobile, 4 on desktop
-- Recent backups list should scroll if needed on mobile
-- All text should be readable in both light and dark modes
-
-### Accessibility
-
-- Include proper ARIA labels
-- Ensure color is not the only indicator of status
-- Support reduced motion preferences
+- [ ] **No emojis anywhere** — Only Lucide icons (`Database`, `CheckCircle`, etc.)
+- [ ] **Glass card styling** — Uses `.glass-card` class with proper backdrop blur
+- [ ] **Dark mode works** — All colors have `.dark:` variants
+- [ ] **Hover states** — Cards have subtle hover transitions
+- [ ] **Consistent spacing** — Uses p-6, gap-3/4, mb-6 patterns from other Clearing components
+- [ ] **Status colors match** — Green/yellow/red match Clearing's existing palette
+- [ ] **Mobile responsive** — Stats grid is 2-col on mobile, 4-col on desktop
+- [ ] **Accessible** — Proper color contrast, no color-only indicators
+- [ ] **Organic feel** — Rounded corners (rounded-xl), soft backgrounds, welcoming copy
 
 ---
 
 ## Testing Checklist
 
-- [ ] Component renders with mock data when BACKUPS_DB is not available
+- [ ] Component renders with mock data when BACKUPS_DB not available
 - [ ] Component renders with real data from grove-backups-db
-- [ ] Reliability score bar animates smoothly
-- [ ] Dark mode styling works correctly
-- [ ] Mobile layout is responsive
-- [ ] "Today" and "Yesterday" labels work correctly
-- [ ] Weekly vs Daily badges display correctly based on backup count
-- [ ] Health status correctly detects if backups are current
+- [ ] Reliability score bar animates smoothly (700ms ease-out)
+- [ ] Dark mode styling matches Clearing's other glass cards
+- [ ] Mobile layout stacks stats in 2x2 grid
+- [ ] "Today" and "Yesterday" labels work correctly for dates
+- [ ] Weekly vs Daily badges display correctly (count >= 10 = weekly)
+- [ ] Health status correctly detects if backups are current (within 2 days)
 
 ---
 
@@ -557,11 +678,13 @@ The backup status will automatically populate from the production `grove-backups
 
 ## Reference Links
 
+- **Grove UI Patterns:** `/docs/design/grove-ui-patterns.md` (READ THIS FIRST)
 - **Patina Project:** `/Users/autumn/Documents/Projects/Patina`
 - **Patina Status Script:** `/Users/autumn/Documents/Projects/Patina/scripts/status.sh`
-- **Clearing Spec:** `/Users/autumn/Documents/Projects/GroveEngine/docs/specs/clearing-spec.md`
-- **Clearing Implementation:** `/Users/autumn/Documents/Projects/GroveEngine/clearing`
+- **Clearing Spec:** `/docs/specs/clearing-spec.md`
+- **Clearing Implementation:** `/clearing`
 
 ---
 
 *Generated by Claude Code for GroveEngine/Clearing integration*
+*Follows Grove UI patterns: Lucide icons only, glassmorphism, organic feel*
