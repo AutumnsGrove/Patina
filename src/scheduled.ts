@@ -302,6 +302,10 @@ async function recordBackupResult(env: Env, result: BackupResult): Promise<void>
 
 /**
  * Record backup in inventory
+ *
+ * Uses INSERT OR IGNORE to handle the case where daily and weekly backups
+ * overlap on Sundays (daily runs at 3 AM, weekly at 4 AM). If the daily
+ * backup already created the inventory record, we silently skip the duplicate.
  */
 async function recordBackupInventory(
   env: Env,
@@ -315,7 +319,7 @@ async function recordBackupInventory(
 ): Promise<void> {
   await env.METADATA_DB.prepare(
     `
-    INSERT INTO backup_inventory (r2_key, database_name, backup_date, size_bytes, table_count, created_at, expires_at)
+    INSERT OR IGNORE INTO backup_inventory (r2_key, database_name, backup_date, size_bytes, table_count, created_at, expires_at)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `
   )
